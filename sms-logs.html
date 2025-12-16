@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SMS Logs - Admissions Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Layout injected by global.js -->
+        <div class="main-content">
+            <div class="page-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <h1>SMS Logs</h1>
+                    <!-- We can manually refresh via the controller if needed -->
+                    <button onclick="window.activeListController.loadData()" class="btn-primary" style="width: auto;">Refresh</button>
+                </div>
+
+                <!-- 1. TOOLBAR CONTAINER -->
+                <div id="logsToolbar"></div>
+
+                <div class="table-container">
+                    <!-- 2. TABLE ID is important -->
+                    <table class="data-table" id="logsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Reference</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsBody">
+                            <!-- Rows injected by Controller -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 3. PAGINATION CONTAINER -->
+                <div id="logsPagination"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="global.js"></script>
+    <script src="list-controller.js"></script> <!-- Import the new Controller -->
+    
+    <script>
+        checkSessionAndRenderLayout();
+
+        // 4. Initialize the Controller
+        window.activeListController = new ListController({
+            tableId: 'logsTable',
+            toolbarId: 'logsToolbar',
+            paginationId: 'logsPagination',
+
+            // A. Define how to get data from Supabase
+            fetchData: async ({ from, to, search, date }) => {
+                let query = supabase
+                    .from('sms_trigger_master')
+                    .select('*', { count: 'exact' })
+                    .order('created_at', { ascending: false })
+                    .range(from, to);
+
+                // Apply Search (Case Insensitive)
+                if (search) {
+                    query = query.or(`first_name.ilike.%${search}%,phone.ilike.%${search}%,reference_code.ilike.%${search}%`);
+                }
+
+                // Apply Date Filter (Exact match on the day)
+                if (date) {
+                    const startOfDay = `${date}T00:00:00`;
+                    const endOfDay = `${date}T23:59:59`;
+                    query = query.gte('created_at', startOfDay).lte('created_at', endOfDay);
+                }
+
+                const { data, count, error } = await query;
+                return { data, count, error };
+            },
+
+            // B. Define how to render a single row
+            renderRow: (log) => {
+                const date = new Date(log.created_at).toLocaleString();
+                const statusClass = log.sms_status === 'sent' ? 'status-sent' : 
+                                    log.sms_status === 'failed' ? 'status-failed' : 'status-pending';
+                
+                const actionBtn = log.sms_status === 'failed' 
+                    ? `<button onclick="retrySMS('${log.id}')" class="btn-retry">Retry ⟳</button>` 
+                    : '<span style="color:#cbd5e1;">-</span>';
+
+                const rowTitle = log.error_message ? `title="Error: ${log.error_message}"` : '';
+
+                return `
+                    <tr ${rowTitle}>
+                        <td>${date}</td>
+                        <td>${log.first_name || '-'}</td>
+                        <td>${log.phone}</td>
+                        <td>${log.reference_code}</td>
+                        <td><span class="status-badge ${statusClass}">${log.sms_status}</span></td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            }
+        });
+
+        // 5. Keep the Retry Logic separate
+        async function retrySMS(id) {
+            if(!confirm("Resend this SMS?")) return;
+            const { error } = await supabase
+                .from('sms_trigger_master')
+                .update({ sms_status: 'pending', error_message: null, retry_count: 1 })
+                .eq('id', id);
+
+            if (error) alert("Error: " + error.message);
+            else window.activeListController.loadData(); // Reload via controller
+        }
+    </script>
+</body>
+</html>

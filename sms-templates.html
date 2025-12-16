@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SMS Templates - Admissions Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Global layout injection happens here -->
+        <div class="main-content">
+            <div class="page-content">
+                <h1>SMS Templates</h1>
+                <p style="color: #64748b; margin-top: 10px; margin-bottom: 20px;">
+                    Edit the automated messages sent by the system.
+                </p>
+                
+                <div id="loading" style="text-align: center; padding: 40px; color: #64748b;">
+                    Loading templates...
+                </div>
+
+                <!-- Template Grid Container -->
+                <div id="templateGrid" class="template-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="global.js"></script>
+    <script>
+        // 1. Initialize Layout
+        checkSessionAndRenderLayout();
+
+        // 2. Fetch and Render Templates
+        async function loadTemplates() {
+            const grid = document.getElementById('templateGrid');
+            const loader = document.getElementById('loading');
+            
+            // Fetch from DB (RLS Policy ensures only admins see this)
+            const { data: templates, error } = await supabase
+                .from('sms_templates')
+                .select('*')
+                .order('created_at', { ascending: true });
+
+            if (error) {
+                console.error(error);
+                loader.textContent = "Error loading templates: " + error.message;
+                return;
+            }
+
+            loader.style.display = 'none';
+
+// Generate HTML for each template
+            grid.innerHTML = templates.map(t => `
+                <div class="template-card" id="card-${t.id}">
+                    <div class="template-header">
+                        <span class="template-title">${t.template_name}</span>
+                        <span class="template-slug">${t.template_slug}</span>
+                    </div>
+                    
+                    <div class="variables-tip">
+                        <strong>Available Variables:</strong> 
+                        <span class="variable-tag">{{first_name}}</span>, 
+                        <span class="variable-tag">{{reference_code}}</span>, 
+                        <span class="variable-tag">{{link}}</span>
+                    </div>
+
+                    <!-- NEW: Link Configuration Section -->
+                    <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                        <label style="font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 8px; display:block;">
+                            <i class="fas fa-link"></i> Link Base URL
+                        </label>
+                        <input type="text" id="url-${t.id}" value="${t.base_url || ''}" 
+                               placeholder="https://your-site.com/" 
+                               style="font-family: monospace; font-size: 0.9rem;">
+                        <p style="font-size: 0.75rem; color: #64748b; margin-top: 6px;">
+                            This URL is joined with the Reference Code to create <strong>{{link}}</strong>.
+                        </p>
+                    </div>
+
+                    <label style="font-size: 0.8rem; font-weight: 700; color: #475569; margin-top: 5px; display:block;">
+                        Message Content
+                    </label>
+                    <textarea id="msg-${t.id}" class="template-editor">${t.message_content}</textarea>
+
+                    <div class="card-actions">
+                        <label class="status-toggle">
+                            <input type="checkbox" id="active-${t.id}" ${t.is_active ? 'checked' : ''}>
+                            Active
+                        </label>
+                        <button onclick="saveTemplate('${t.id}')" class="btn-primary" style="width: auto; padding: 8px 20px;">
+                            Save Changes
+                        </button>
+                    </div>
+                    <div id="feedback-${t.id}" class="error-msg" style="text-align: right; margin: 0;"></div>
+                </div>
+            `).join('');
+        }
+
+        // 3. Save Function
+async function saveTemplate(id) {
+            const newContent = document.getElementById(`msg-${id}`).value;
+            // NEW: Get the Base URL value
+            const newBaseUrl = document.getElementById(`url-${id}`).value;
+            const isActive = document.getElementById(`active-${id}`).checked;
+            
+            const btn = document.querySelector(`#card-${id} button`);
+            const feedback = document.getElementById(`feedback-${id}`);
+
+            // UI Feedback
+            const originalText = btn.textContent;
+            btn.textContent = "Saving...";
+            btn.disabled = true;
+            feedback.style.display = 'none';
+
+            const { error } = await supabase
+                .from('sms_templates')
+                .update({ 
+                    message_content: newContent,
+                    base_url: newBaseUrl, // <--- Saving the new column
+                    is_active: isActive,
+                    updated_at: new Date()
+                })
+                .eq('id', id);
+
+            btn.disabled = false;
+
+            if (error) {
+                btn.textContent = originalText;
+                feedback.textContent = "Error: " + error.message;
+                feedback.style.display = 'block';
+                feedback.style.color = 'red';
+            } else {
+                btn.textContent = "Saved!";
+                setTimeout(() => { btn.textContent = originalText; }, 2000);
+            }
+        }
+
+        // Run immediately
+        loadTemplates();
+    </script>
+</body>
+</html>
