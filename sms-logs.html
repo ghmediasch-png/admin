@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMS Logs - Admissions Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -9,13 +10,15 @@
 </head>
 <body>
     <div class="admin-layout">
-        <!-- Layout injected by global.js -->
+        <!-- Sidebar/Header injected by global.js -->
+        
         <div class="main-content">
             <div class="page-content">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
                     <h1>SMS Logs</h1>
-                    <!-- We can manually refresh via the controller if needed -->
-                    <button onclick="window.activeListController.loadData()" class="btn-primary" style="width: auto;">Refresh</button>
+                    <button onclick="window.activeListController.loadData()" class="btn-primary" style="width: auto;">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
                 </div>
 
                 <!-- 1. TOOLBAR CONTAINER -->
@@ -47,7 +50,7 @@
     </div>
 
     <script src="global.js"></script>
-    <script src="list-controller.js"></script> <!-- Import the new Controller -->
+    <script src="list-controller.js"></script>
     
     <script>
         checkSessionAndRenderLayout();
@@ -116,7 +119,7 @@
                 .eq('id', id);
 
             if (error) alert("Error: " + error.message);
-            else window.activeListController.loadData(); // Reload via controller
+            else window.activeListController.loadData();
         }
     </script>
 </body>

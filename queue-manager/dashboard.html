@@ -1,0 +1,80 @@
+<!-- queue-manager/dashboard.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Queue Manager - Admin</title>
+    
+    <!-- 1. Font Awesome & Supabase (CDNs) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- 2. INHERITANCE: Load Global Styles from Root -->
+    <link rel="stylesheet" href="../style.css">
+    
+    <!-- 3. Load Module Styles -->
+    <link rel="stylesheet" href="queue.css">
+</head>
+<body>
+    <!-- The Global Layout Wrapper -->
+    <div class="admin-layout">
+        <!-- Sidebar/Header injected by global.js -->
+        
+        <div class="main-content">
+            <div class="page-content">
+                <div class="top-bar-action" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h1>Queue Management</h1>
+                    <button class="btn-primary" onclick="openCreateModal()" style="width: auto; padding: 10px 20px;">
+                        <i class="fas fa-plus"></i> New Queue
+                    </button>
+                </div>
+
+                <!-- Queue Cards Container -->
+                <div id="queueList" class="template-grid">
+                    <p style="color:#64748b;">Loading queues...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Queue Modal (Added for Part 3) -->
+    <div id="createModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1rem;">Create New Queue</h2>
+            <form id="createQueueForm">
+                <div class="form-group">
+                    <label>Queue Name</label>
+                    <input type="text" id="queueName" placeholder="e.g., Registration Desk A" required>
+                </div>
+                <div class="form-group">
+                    <label>URL Slug (Unique)</label>
+                    <input type="text" id="queueSlug" placeholder="e.g., reg-desk-a" required>
+                    <small style="color:#64748b; display:block; margin-top:5px;">
+                        Public Link: .../queue-manager/join.html?q=<span id="slugPreview">...</span>
+                    </small>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-primary" onclick="closeCreateModal()" 
+                            style="background: #e2e8f0; color: #334155;">Cancel</button>
+                    <button type="submit" class="btn-primary">Create Queue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 4. INHERITANCE: Load Global Logic from Root -->
+    <script src="../global.js"></script>
+    <script src="../list-controller.js"></script>
+
+    <!-- 5. Load Module Logic -->
+    <script src="queue-admin.js"></script>
+
+    <script>
+        // 6. Verify Session & Render Layout
+        checkSessionAndRenderLayout();
+        
+        // Note: openCreateModal() is now handled by queue-admin.js, not an inline script
+    </script>
+</body>
+</html>

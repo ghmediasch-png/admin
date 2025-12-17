@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SMS Templates - Admissions Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -9,7 +10,8 @@
 </head>
 <body>
     <div class="admin-layout">
-        <!-- Global layout injection happens here -->
+        <!-- Sidebar/Header injected by global.js -->
+        
         <div class="main-content">
             <div class="page-content">
                 <h1>SMS Templates</h1>
@@ -37,7 +39,6 @@
             const grid = document.getElementById('templateGrid');
             const loader = document.getElementById('loading');
             
-            // Fetch from DB (RLS Policy ensures only admins see this)
             const { data: templates, error } = await supabase
                 .from('sms_templates')
                 .select('*')
@@ -51,7 +52,6 @@
 
             loader.style.display = 'none';
 
-// Generate HTML for each template
             grid.innerHTML = templates.map(t => `
                 <div class="template-card" id="card-${t.id}">
                     <div class="template-header">
@@ -66,7 +66,7 @@
                         <span class="variable-tag">{{link}}</span>
                     </div>
 
-                    <!-- NEW: Link Configuration Section -->
+                    <!-- Link Configuration Section -->
                     <div style="background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0;">
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 8px; display:block;">
                             <i class="fas fa-link"></i> Link Base URL
@@ -99,16 +99,14 @@
         }
 
         // 3. Save Function
-async function saveTemplate(id) {
+        async function saveTemplate(id) {
             const newContent = document.getElementById(`msg-${id}`).value;
-            // NEW: Get the Base URL value
             const newBaseUrl = document.getElementById(`url-${id}`).value;
             const isActive = document.getElementById(`active-${id}`).checked;
             
             const btn = document.querySelector(`#card-${id} button`);
             const feedback = document.getElementById(`feedback-${id}`);
 
-            // UI Feedback
             const originalText = btn.textContent;
             btn.textContent = "Saving...";
             btn.disabled = true;
@@ -118,7 +116,7 @@ async function saveTemplate(id) {
                 .from('sms_templates')
                 .update({ 
                     message_content: newContent,
-                    base_url: newBaseUrl, // <--- Saving the new column
+                    base_url: newBaseUrl,
                     is_active: isActive,
                     updated_at: new Date()
                 })
@@ -137,7 +135,6 @@ async function saveTemplate(id) {
             }
         }
 
-        // Run immediately
         loadTemplates();
     </script>
 </body>

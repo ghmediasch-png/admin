@@ -2,18 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Admissions Admin</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-    <!-- The Global Layout Wrapper -->
     <div class="admin-layout">
-        <!-- Sidebar and Header are injected here by global.js -->
-
+        <!-- Sidebar/Header injected by global.js -->
+        
         <div class="main-content">
-            <!-- Unique Page Content Goes Here -->
             <div class="page-content">
                 <h1>Dashboard Overview</h1>
                 <p style="color: #64748b; margin-top: 10px;">Welcome to the admissions control center.</p>
@@ -35,7 +34,6 @@
 
     <script src="global.js"></script>
     <script>
-        // Initialize Security and Layout
         checkSessionAndRenderLayout();
     </script>
 </body>
