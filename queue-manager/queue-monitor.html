@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitor Queue</title>
-    
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="queue.css">
 
@@ -15,13 +16,18 @@
         /* Specific styles for the Monitor */
         .monitor-grid {
             display: grid;
-            grid-template-columns: 350px 1fr; /* Sidebar for Serving, Main for List */
+            grid-template-columns: 350px 1fr;
+            /* Sidebar for Serving, Main for List */
             gap: 20px;
-            height: calc(100vh - 140px); /* Fit screen */
+            height: calc(100vh - 140px);
+            /* Fit screen */
         }
 
         @media (max-width: 900px) {
-            .monitor-grid { grid-template-columns: 1fr; height: auto; }
+            .monitor-grid {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
         }
 
         /* Now Serving Card */
@@ -99,7 +105,9 @@
             transition: background 0.1s;
         }
 
-        .wait-row:hover { background: #f8fafc; }
+        .wait-row:hover {
+            background: #f8fafc;
+        }
 
         .pos-badge {
             background: #e2e8f0;
@@ -115,12 +123,30 @@
             font-size: 0.8rem;
         }
 
-        .row-info { flex: 1; }
-        .row-name { font-weight: 600; color: #334155; }
-        .row-meta { font-size: 0.85rem; color: #94a3b8; }
+        .row-info {
+            flex: 1;
+        }
 
-        .row-actions { display: flex; gap: 8px; opacity: 0.5; transition: opacity 0.2s; }
-        .wait-row:hover .row-actions { opacity: 1; }
+        .row-name {
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .row-meta {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        .row-actions {
+            display: flex;
+            gap: 8px;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+        }
+
+        .wait-row:hover .row-actions {
+            opacity: 1;
+        }
 
         .btn-icon {
             border: 1px solid #e2e8f0;
@@ -134,7 +160,11 @@
             align-items: center;
             justify-content: center;
         }
-        .btn-icon:hover { background: #f1f5f9; color: #0f172a; }
+
+        .btn-icon:hover {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
 
         /* Empty State */
         .empty-state {
@@ -144,33 +174,41 @@
         }
     </style>
 </head>
+
 <body>
     <div class="admin-layout">
         <!-- Sidebar/Header injected -->
-        
+
         <div class="main-content">
             <div class="page-content">
-                <!-- Top Nav -->
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-                    <div>
-                        <a href="dashboard.html" style="text-decoration:none; color:#64748b; font-size:0.9rem;">
-                            <i class="fas fa-arrow-left"></i> Back to Dashboard
-                        </a>
-                        <h1 id="queueTitle" style="margin-top:5px;">Loading...</h1>
+                <!-- Top Nav & Tabs -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <a href="dashboard.html" style="text-decoration:none; color:#64748b; font-size:0.9rem;">
+                                <i class="fas fa-arrow-left"></i> Back to Dashboard
+                            </a>
+                            <h1 id="queueTitle" style="margin-top:5px;">Loading...</h1>
+                        </div>
+                        <!-- Tab Switcher -->
+                        <div style="background:#f1f5f9; padding:5px; border-radius:8px; display:flex; gap:5px;">
+                            <button class="btn-tab active" onclick="switchTab('monitor')" id="tab-monitor">
+                                <i class="fas fa-desktop"></i> Monitor
+                            </button>
+                            <button class="btn-tab" onclick="switchTab('settings')" id="tab-settings">
+                                <i class="fas fa-cog"></i> Settings
+                            </button>
+                        </div>
                     </div>
-                    
-                    <button class="btn-primary" onclick="callNext()" style="width: auto; font-size: 1.1rem; padding: 12px 24px;">
-                        <i class="fas fa-bell"></i> Call Next Person
-                    </button>
                 </div>
 
-                <!-- Main Grid -->
-                <div class="monitor-grid">
-                    
+                <!-- VIEW 1: MONITOR (The existing Grid) -->
+                <div id="view-monitor" class="monitor-grid">
+
                     <!-- LEFT: Serving -->
                     <div id="servingContainer">
-                        <!-- Injected by JS -->
-                        <div class="serving-card" style="border-color:#e2e8f0; justify-content:center; align-items:center; text-align:center;">
+                        <div class="serving-card"
+                            style="border-color:#e2e8f0; justify-content:center; align-items:center; text-align:center;">
                             <i class="fas fa-coffee" style="font-size:3rem; color:#e2e8f0; margin-bottom:15px;"></i>
                             <h3 style="color:#94a3b8;">No one is being served</h3>
                         </div>
@@ -179,15 +217,123 @@
                     <!-- RIGHT: List -->
                     <div class="waiting-container">
                         <div class="waiting-header">
-                            <span>Waiting List</span>
-                            <span class="role-badge" id="countBadge">0</span>
+                            <div>
+                                <span>Waiting List</span>
+                                <span class="role-badge" id="countBadge">0</span>
+                            </div>
+                            <div style="display:flex; gap:10px;">
+                                <button class="btn-primary" onclick="openWalkInModal()"
+                                    style="width: auto; padding: 6px 12px; font-size:0.8rem; background:#64748b;">
+                                    <i class="fas fa-user-plus"></i> Walk-in
+                                </button>
+                                <button class="btn-primary" onclick="callNext()"
+                                    style="width: auto; padding: 6px 12px; font-size:0.8rem;">
+                                    <i class="fas fa-bell"></i> Call Next
+                                </button>
+                            </div>
                         </div>
                         <div class="waiting-list" id="waitingList">
                             <div class="empty-state">Loading data...</div>
                         </div>
                     </div>
-
                 </div>
+
+                <!-- VIEW 2: SETTINGS (Hidden by default) -->
+                <div id="view-settings" style="display:none; max-width:800px; margin:0 auto;">
+
+                    <!-- Panel 1: Queue Status -->
+                    <div class="queue-card" style="margin-bottom:20px; cursor:default;">
+                        <h3><i class="fas fa-power-off"></i> Queue Status</h3>
+                        <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Control if new students can
+                            join.</p>
+
+                        <div style="display:flex; gap:15px; align-items:center;">
+                            <label class="status-toggle"
+                                style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
+                                <input type="radio" name="qStatus" value="OPEN" onchange="updateQueueStatus('OPEN')">
+                                <span class="queue-status-dot dot-active"></span> Open
+                            </label>
+                            <label class="status-toggle"
+                                style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
+                                <input type="radio" name="qStatus" value="PAUSED"
+                                    onchange="updateQueueStatus('PAUSED')">
+                                <span class="queue-status-dot dot-paused"></span> Paused
+                            </label>
+                            <label class="status-toggle"
+                                style="background:#f8fafc; padding:10px; border-radius:6px; border:1px solid #e2e8f0;">
+                                <input type="radio" name="qStatus" value="CLOSED"
+                                    onchange="updateQueueStatus('CLOSED')">
+                                <span class="queue-status-dot dot-closed"></span> Closed
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Panel 1.5: Reports  -->
+                    <div class="queue-card" style="margin-bottom:20px; cursor:default;">
+                        <h3><i class="fas fa-file-download"></i> Reports</h3>
+                        <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Download the full attendance list.</p>
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong>Export to CSV</strong>
+                                <div style="font-size:0.8rem; color:#64748b;">Includes Name, Phone, Status, and Timestamps.</div>
+                            </div>
+                            <button onclick="exportQueueData()" class="btn-primary" style="width: auto; padding: 8px 16px;">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Panel 2: Danger Zone -->
+                    <div class="queue-card" style="border:1px solid #fee2e2; cursor:default;">
+                        <h3 style="color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
+                        <p style="color:#64748b; font-size:0.9rem; margin-bottom:15px;">Actions here cannot be undone.
+                        </p>
+
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:15px;">
+                            <div>
+                                <strong>Archive Queue</strong>
+                                <div style="font-size:0.8rem; color:#64748b;">Hides queue from dashboard but keeps data.
+                                </div>
+                            </div>
+                            <button onclick="archiveQueue()" class="btn-retry"
+                                style="color:#d97706; border-color:#d97706;">Archive</button>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong style="color:#ef4444;">Delete Queue</strong>
+                                <div style="font-size:0.8rem; color:#64748b;">Permanently deletes event and all student
+                                    data.</div>
+                            </div>
+                            <button onclick="deleteQueue()" class="btn-primary"
+                                style="background:#ef4444;">Delete</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Walk-in Modal -->
+    <div id="walkInModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Add Walk-in / Manual Entry</h2>
+            <p style="color:#64748b; margin-bottom:15px;">Bypasses Master DB verification.</p>
+            <div class="form-group">
+                <label>Name / Description</label>
+                <input type="text" id="manualName" placeholder="e.g. Parent of GHMS25..." required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" id="manualPhone" placeholder="0xxxxxxxxx">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button class="btn-retry"
+                    onclick="document.getElementById('walkInModal').classList.remove('active')">Cancel</button>
+                <button class="btn-primary" onclick="submitWalkIn()">Add to Queue</button>
             </div>
         </div>
     </div>
@@ -198,4 +344,5 @@
         checkSessionAndRenderLayout();
     </script>
 </body>
+
 </html>

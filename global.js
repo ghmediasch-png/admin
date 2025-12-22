@@ -100,6 +100,12 @@ function renderLayout(email, profile) {
             link: queuePrefix + 'dashboard.html', 
             icon: 'fa-users-line', 
             permission: 'access_queue' 
+        },
+        { 
+            name: 'QMS SMS Settings', 
+            link: queuePrefix + 'sms-settings.html', 
+            icon: 'fa-comment-sms', 
+            roleReq: 'SUPER_ADMIN' 
         }
     ];
 

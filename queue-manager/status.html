@@ -14,7 +14,12 @@
     <link rel="stylesheet" href="queue.css">
 
     <style>
-        body { background: #f1f5f9; }
+        /* Override global admin styles */
+        body { 
+            background: #f1f5f9; 
+            overflow: auto !important; 
+            height: auto !important;
+        }
         .status-wrapper {
             max-width: 500px;
             margin: 0 auto;
@@ -112,6 +117,20 @@
 <body>
 
     <div class="status-wrapper">
+        
+        <!-- NEW: Profile Switcher (Hidden until loaded) -->
+        <div id="profileSwitcher" style="background: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e2e8f0; display:none;">
+            <div style="font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 10px; text-transform: uppercase;">
+                <i class="fas fa-users"></i> Managing <span id="profileCount">1</span> Tickets
+            </div>
+            <div id="tokenList" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Buttons injected by JS -->
+            </div>
+            <button onclick="window.location.href='join.html?q=' + currentSlug" class="btn-retry" style="width:100%; margin-top:10px; border-style:dashed;">
+                <i class="fas fa-plus"></i> Join for another person
+            </button>
+        </div>
+
         <!-- Admin Message Notification -->
         <div id="adminMessage">
             <i class="fas fa-bullhorn" style="margin-right:8px;"></i>

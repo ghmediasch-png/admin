@@ -56,3 +56,67 @@
     max-width: 500px;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
+
+/* Tab Buttons */
+.btn-tab {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-tab.active {
+    background: white;
+    color: #2563eb;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.btn-tab:hover { color: #1e293b; }
+
+
+
+/* Filter Toggles (Active vs Archive) */
+.filter-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap; /* Wraps on very small mobiles */
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between radio circle and text */
+    padding: 8px 16px;
+    border-radius: 99px; /* Pill shape */
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #64748b;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.filter-option:hover {
+    background: #f1f5f9;
+}
+
+/* When the radio inside is checked, style the label */
+.filter-option:has(input:checked) {
+    background: #eff6ff;
+    color: #2563eb;
+    border-color: #bfdbfe;
+}
+
+.filter-option input {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #2563eb; /* Makes the radio button blue */
+}

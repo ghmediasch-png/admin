@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QMS SMS Settings</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="queue.css">
+
+    <style>
+        /* Master Switch Card */
+        .master-switch-card {
+            background: #1e293b;
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .switch-label h2 { margin: 0; font-size: 1.5rem; }
+        .switch-label p { color: #94a3b8; margin: 5px 0 0 0; }
+
+        /* Big Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #475569;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #22c55e; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* Template Cards */
+        .template-card {
+            border-left: 4px solid var(--primary);
+        }
+        .var-badge {
+            background: #f1f5f9;
+            color: #64748b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Injected Sidebar -->
+        
+        <div class="main-content">
+            <div class="page-content">
+                <div style="margin-bottom: 20px;">
+                    <a href="dashboard.html" style="color:#64748b; text-decoration:none;"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+                    <h1 style="margin-top:10px;">SMS Configuration</h1>
+                </div>
+
+                <!-- 1. Global Master Switch -->
+                <div class="master-switch-card">
+                    <div class="switch-label">
+                        <h2>Global SMS Power</h2>
+                        <p>If turned OFF, no SMS will be sent from the Queue Manager, ignoring all other settings.</p>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="globalMasterSwitch" onchange="toggleGlobalSMS(this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <!-- 2. Templates Grid -->
+                <h3 style="margin-bottom: 15px; color:#334155;">Queue Templates</h3>
+                <div id="templatesGrid" class="template-grid">
+                    <p>Loading templates...</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="../global.js"></script>
+    <script src="sms-settings.js"></script>
+    <script>
+        checkSessionAndRenderLayout();
+    </script>
+</body>
+</html>
