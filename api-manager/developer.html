@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GH Schools Developer Portal</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="settings.css"> <!-- Reusing form input styles -->
+    <link rel="stylesheet" href="developer.css">
+</head>
+<body>
+
+    <div class="public-container">
+        <!-- Public Header -->
+        <header class="public-header">
+            <div class="brand">
+                <i class="fas fa-layer-group"></i>
+                GH Schools API
+            </div>
+            <div>
+                <a href="mailto:support@ghschools.online" class="btn-retry contact-btn">
+                    <i class="fas fa-envelope"></i> Contact Support
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main>
+            <div class="intro-section">
+                <h1 class="page-title">Developer Documentation</h1>
+                <p class="page-subtitle">Complete reference and testing tools for the Student Verification API.</p>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs-header tabs-centered">
+                <button class="tab-btn active" onclick="switchTab('docs')" id="btn-docs">Documentation</button>
+                <button class="tab-btn" onclick="switchTab('sandbox')" id="btn-sandbox">API Sandbox</button>
+            </div>
+
+            <!-- VIEW 1: Documentation -->
+            <div id="view-docs" class="doc-section doc-centered">
+                <div class="doc-actions">
+                    <button onclick="window.print()" class="btn-retry"><i class="fas fa-print"></i> Print Guide</button>
+                </div>
+
+                <h1>Student Verification API</h1>
+                <p><strong>Version 1.0</strong> | Secure REST API for Banking Partners</p>
+                
+                <h2>1. Authentication</h2>
+                <p>Include your unique API Key in the request header. Do not share this key.</p>
+                <div class="code-block">X-API-Key: sk_live_xxxxxxxxxxxxxxxxxxxxxxxx</div>
+
+                <h2>2. Endpoint</h2>
+                <div class="code-block">POST <span id="docUrl">...loading...</span></div>
+
+                <h2>3. Request Format</h2>
+                <div class="code-block">{
+  "student_id": "GHMS25101"
+}</div>
+
+                <h2>4. Response Codes</h2>
+                <ul class="status-list">
+                    <li><strong>200 OK:</strong> Student found.</li>
+                    <li><strong>401 Unauthorized:</strong> Invalid API Key.</li>
+                    <li><strong>404 Not Found:</strong> Student ID does not exist.</li>
+                    <li><strong>429 Too Many Requests:</strong> Rate limit exceeded.</li>
+                </ul>
+            </div>
+
+            <!-- VIEW 2: Sandbox (Hidden by default via CSS class) -->
+            <div id="view-sandbox" class="hidden">
+                <div class="sandbox-grid">
+                    <!-- Request Panel -->
+                    <div class="sandbox-panel">
+                        <h3 class="panel-title">Send Request</h3>
+                        
+                        <label class="setting-label">Target URL</label>
+                        <input type="text" id="sandboxUrl" class="setting-input input-readonly" readonly>
+
+                        <label class="setting-label">API Key</label>
+                        <input type="password" id="sandboxKey" class="setting-input input-mb" placeholder="Paste sk_live_...">
+                        <small class="helper-text">Use the valid key provided by the Admin.</small>
+
+                        <label class="setting-label">Student ID</label>
+                        <input type="text" id="sandboxId" class="setting-input input-lg-mb" placeholder="e.g. GHMS25101">
+
+                        <button onclick="runTest()" class="btn-primary" id="testBtn">
+                            <i class="fas fa-paper-plane"></i> Send Request
+                        </button>
+                    </div>
+
+                    <!-- Response Panel -->
+                    <div class="sandbox-panel panel-dark">
+                        <h3 class="panel-title-dark">Response</h3>
+                        <div id="sandboxOutput" class="response-window">// JSON Output will appear here...</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Logic -->
+    <script src="developer.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+guide to creating submodules
+
+
+This is a logical expansion of your platform. By using the same "Submodule Architecture" as the Queue Manager, we keep the system modular and easy to maintain.
+
+

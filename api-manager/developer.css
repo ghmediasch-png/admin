@@ -1,0 +1,217 @@
+/* api-manager/developer.css */
+
+/* --- Public Layout Overrides --- */
+body {
+    background: #f8fafc;
+    height: auto;
+    overflow-y: auto;
+}
+
+.public-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.public-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    margin-bottom: 40px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand i { color: #2563eb; }
+
+.contact-btn {
+    text-decoration: none;
+}
+
+/* --- Intro Section --- */
+.intro-section {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.page-title {
+    font-size: 2.5rem;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.page-subtitle {
+    color: #64748b;
+    font-size: 1.1rem;
+}
+
+/* --- Tabs --- */
+.tabs-header {
+    display: flex;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 30px;
+    gap: 20px;
+}
+
+.tabs-centered {
+    justify-content: center;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 15px 5px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.tab-btn:hover { color: #334155; }
+
+/* --- Documentation View --- */
+.doc-section {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    max-width: 900px;
+    margin-bottom: 30px;
+}
+
+.doc-centered {
+    margin: 0 auto;
+}
+
+.doc-actions {
+    text-align: right;
+}
+
+.doc-section h2 { 
+    border-bottom: 1px solid #f1f5f9; 
+    padding-bottom: 10px; 
+    margin-bottom: 20px; 
+    margin-top: 30px; 
+}
+
+.doc-section h3 { 
+    color: #334155; 
+    margin-top: 20px; 
+    margin-bottom: 10px; 
+}
+
+.doc-section p { 
+    color: #475569; 
+    line-height: 1.6; 
+    margin-bottom: 15px; 
+}
+
+.status-list {
+    margin-left: 20px;
+    color: #475569;
+    margin-bottom: 15px;
+}
+
+.status-list li {
+    margin-bottom: 5px;
+}
+
+/* --- Sandbox View --- */
+.hidden {
+    display: none;
+}
+
+.sandbox-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+@media(max-width: 900px) { 
+    .sandbox-grid { grid-template-columns: 1fr; } 
+}
+
+.sandbox-panel {
+    background: white;
+    padding: 25px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.panel-title {
+    margin-bottom: 15px;
+}
+
+/* Inputs helpers */
+.input-readonly {
+    color: #64748b;
+    margin-bottom: 15px;
+    background-color: #f1f5f9; /* Visual cue for readonly */
+}
+
+.input-mb {
+    margin-bottom: 15px;
+}
+
+.input-lg-mb {
+    margin-bottom: 20px;
+}
+
+.helper-text {
+    color: #64748b;
+    display: block;
+    margin-top: -10px;
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+}
+
+/* Dark Response Panel */
+.panel-dark {
+    background: #0f172a;
+    border: none;
+}
+
+.panel-title-dark {
+    color: white;
+    margin-bottom: 15px;
+}
+
+.response-window {
+    background: #1e293b;
+    color: #a5b4fc;
+    font-family: monospace;
+    padding: 20px;
+    border-radius: 8px;
+    min-height: 300px;
+    white-space: pre-wrap;
+    overflow-x: auto;
+    font-size: 0.9rem;
+}
+
+.code-block {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 15px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #334155;
+    overflow-x: auto;
+    margin-bottom: 15px;
+}

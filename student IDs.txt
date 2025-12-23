@@ -1,0 +1,35 @@
+
+--
+apart from these GHMS25101, GHMS25102, or GHMS25103
+can we add 5 more dummy students in the student_master_db table
+
+then let's use sql script to enter a row at a time into sms_trigger_master table and see if the sms would be triggered
+
+--
+test_admin@ghschools.online
+test_admin@ghschools.online
+
+GHMS25101, GHMS25102, or GHMS25103 to test.
+GHMS25101
+
+
+--
+
+
+--
+2024 FLAG Football Championship Highlights: Lockdown Legends vs. Metro Select
+
+#flagfootball #ghanatiktok🇬🇭 #NFLflag #football #accra
+
+
+INSERT INTO public.student_master_db 
+(student_id, first_name, middle_name, surname, program, level, phone_number_1)
+VALUES 
+('GHMS25104', 'Kwame', 'Jr', 'Boateng', 'Degree in Journalism', 'L300', '0200000004'),
+('GHMS25105', 'Abigail', '', 'Tetteh', 'Diploma in Multimedia', 'L100', '0240000005'),
+('GHMS25106', 'Samuel', 'Kojo', 'Antwi', 'HND in Marketing', 'L200', '0550000006'),
+('GHMS25107', 'Rita', '', 'Owusu', 'Degree in Public Relations', 'L400', '0270000007'),
+('GHMS25108', 'Isaac', 'Nii', 'Laryea', 'Diploma in TV Production', 'L100', '0500000008')
+ON CONFLICT (student_id) DO NOTHING;
+
+
