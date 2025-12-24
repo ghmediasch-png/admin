@@ -26,6 +26,12 @@ const configSchema = [
         type: 'number'
     },
     {
+        key: 'default_api_key_expiry_days',
+        label: 'Default API Key Validity (Days)',
+        description: 'How many days a newly generated API key remains active.',
+        type: 'number'
+    },
+    {
         key: 'alert_phone_primary',
         label: 'Primary Admin Alert Phone',
         description: 'This number receives critical system SMS alerts.',
