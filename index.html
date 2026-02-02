@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Admissions Admin</title>
+
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <h2><i class="fas fa-lock"></i> Portal Login</h2>
+            <div id="errorMsg" class="error-msg"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Email Address</label>
+                    <input type="email" id="email" required autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Password</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+            </form>
+            <div class="auth-links">
+                <a href="forgot-password.html">
+                    <i class="fas fa-question-circle"></i> Forgot Password?
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="global.js"></script>
+    <script>
+        // 1. Smart Redirect Logic
+        async function handleSmartRedirect() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            // Fetch Permissions
+            const { data: profile, error } = await supabase
+                .from('admin_profiles')
+                .select('permissions')
+                .eq('supabase_uid', session.user.id)
+                .single();
+
+            if (error || !profile) {
+                console.error("Profile check failed", error);
+                return;
+            }
+
+            // DECISION TIME: Where do they go?
+            // Priority 1: If they have Root Access, go to Main Dashboard
+            if (profile.permissions?.access_root) {
+                window.location.href = 'dashboard.html';
+            }
+            // Priority 2: If they ONLY have Queue Access, go straight to Queue Dashboard
+            else if (profile.permissions?.access_queue) {
+                window.location.href = 'queue-manager/dashboard.html';
+            }
+            else {
+                // Fallback / No permissions
+                alert("Your account does not have access to any dashboard.");
+                await supabase.auth.signOut();
+                window.location.reload();
+            }
+        }
+
+        // 2. Run on Page Load (in case they are already logged in)
+        handleSmartRedirect();
+
+        // 3. Handle Form Submit
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const errorDiv = document.getElementById('errorMsg');
+
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
+
+            try {
+                await login(document.getElementById('email').value, document.getElementById('password').value);
+                // SUCCESS: Run the smart redirect
+                await handleSmartRedirect();
+            } catch (err) {
+                errorDiv.innerHTML = '<i class="fas fa-exclamation-circle"></i> Invalid login credentials.';
+                errorDiv.style.display = 'block';
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,84 @@
+.key-reveal-card {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.api-key-display {
+    font-family: monospace;
+    font-size: 1.2rem;
+    background: white;
+    padding: 10px;
+    border: 1px dashed #22c55e;
+    border-radius: 6px;
+    margin: 10px 0;
+    word-break: break-all;
+    color: #15803d;
+    font-weight: bold;
+}
+
+.blur-text {
+    filter: blur(4px);
+    user-select: none;
+    transition: 0.3s;
+}
+
+.blur-text:hover {
+    filter: none;
+}
+
+/* api-manager/banks.css */
+
+/* Key Reveal Card */
+.key-reveal-card {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.api-key-display {
+    font-family: monospace;
+    font-size: 1.2rem;
+    background: white;
+    padding: 10px;
+    border: 1px dashed #22c55e;
+    border-radius: 6px;
+    margin: 10px 0;
+    word-break: break-all;
+    color: #15803d;
+    font-weight: bold;
+}
+
+.blur-text {
+    filter: blur(4px);
+    user-select: none;
+    transition: 0.3s;
+}
+
+.blur-text:hover {
+    filter: none;
+}
+
+/* Modal Styling (Moved from Inline) */
+.modal-card-default {
+    margin: 5% auto;
+    position: relative;
+    max-width: 500px;
+}
+
+.modal-card-success {
+    margin: 5% auto;
+    position: relative;
+    max-width: 550px;
+    border-top: 5px solid #22c55e;
+}
+
+.text-success {
+    color: #15803d;
+}

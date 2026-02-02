@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Overview</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar injected by global.js -->
+        
+        <div class="main-content">
+            <div class="page-content">
+                <div style="margin-bottom: 20px;">
+                    <h1>API Analytics</h1>
+                    <p style="color:#64748b;">Real-time system performance (Last 24 Hours).</p>
+                </div>
+
+                <!-- 1. Metrics Grid -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Total Requests</span>
+                            <i class="fas fa-globe metric-icon"></i>
+                        </div>
+                        <div class="metric-value" id="metricTotal">--</div>
+                        <div class="metric-delta">All time logs</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Success Rate</span>
+                            <i class="fas fa-check-circle metric-icon"></i>
+                        </div>
+                        <div class="metric-value" id="metricSuccess">--%</div>
+                        <div class="metric-delta" id="metricSuccessLabel">Last 24h</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Avg Latency</span>
+                            <i class="fas fa-bolt metric-icon"></i>
+                        </div>
+                        <div class="metric-value" id="metricLatency">--ms</div>
+                        <div class="metric-delta">Response Speed</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-title">Active Banks</span>
+                            <i class="fas fa-university metric-icon"></i>
+                        </div>
+                        <div class="metric-value" id="metricBanks">--</div>
+                        <div class="metric-delta">Registered Partners</div>
+                    </div>
+                </div>
+
+                <!-- 2. Main Chart -->
+                <div class="chart-container">
+                    <div class="section-header">
+                        <h3>Traffic Volume (24h)</h3>
+                        <button onclick="loadDashboardData()" class="btn-retry" style="border:none;">
+                            <i class="fas fa-sync"></i> Refresh
+                        </button>
+                    </div>
+                    <canvas id="trafficChart"></canvas>
+                </div>
+
+                <!-- 3. Recent Logs -->
+                <div class="metric-card" style="padding: 0; overflow: hidden; border:none; box-shadow:none; background:transparent;">
+                    <div class="section-header">
+                        <h3>Recent Activity</h3>
+                        <a href="logs.html" style="color:#2563eb; text-decoration:none; font-size:0.9rem; font-weight:600;">View All &rarr;</a>
+                    </div>
+                    <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; padding: 0 24px;">
+                        <table class="mini-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Bank</th>
+                                    <th>Status</th>
+                                    <th>Latency</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recentLogsBody">
+                                <tr><td colspan="4">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="../global.js"></script>
+    <script src="dashboard.js"></script>
+    <script>checkSessionAndRenderLayout();</script>
+</body>
+</html>

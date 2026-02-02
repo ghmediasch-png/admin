@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Access Logs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="logs.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar injected by global.js -->
+        
+        <div class="main-content">
+            <div class="page-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <div>
+                        <h1>Access Logs</h1>
+                        <p style="color:#64748b;">Audit trail of all external API requests.</p>
+                    </div>
+                    <button onclick="window.activeListController.loadData()" class="btn-retry">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+
+                <!-- 1. Toolbar (Search/Date) injected here -->
+                <div id="logsToolbar"></div>
+
+                <!-- 2. Table -->
+                <div class="table-container">
+                    <table class="data-table" id="logsTable">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Bank</th>
+                                <th>Student ID</th>
+                                <th>Status</th>
+                                <th>Latency</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logsBody">
+                            <tr><td colspan="6" style="text-align:center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 3. Pagination -->
+                <div id="logsPagination"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="sidebar-overlay" style="z-index: 9999;">
+        <div class="auth-card modal-card-default" style="max-width: 600px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">
+                <h3 style="margin:0;">Request Details</h3>
+                <button onclick="closeDetailModal()" style="background:none; border:none; cursor:pointer; font-size:1.2rem;">&times;</button>
+            </div>
+            
+            <div id="modalContent">
+                <!-- Injected by JS -->
+            </div>
+
+            <div style="text-align:right; margin-top:20px;">
+                <button onclick="closeDetailModal()" class="btn-primary" style="width:auto;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../global.js"></script>
+    <script src="../list-controller.js"></script>
+    <script src="logs.js"></script>
+    <script>checkSessionAndRenderLayout();</script>
+</body>
+</html>

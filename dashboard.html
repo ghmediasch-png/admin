@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Admissions Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar/Header injected by global.js -->
+
+        <div class="main-content">
+            <div class="page-content">
+                <h1>Dashboard Overview</h1>
+                <p style="color: #64748b; margin-top: 10px;">Welcome to the admissions control center.</p>
+
+                <!-- Example Stats Cards -->
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px;">
+                    <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h4 style="color: #64748b;">SMS Sent</h4>
+                        <h2 style="font-size: 2rem;">1,240</h2>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                        <h4 style="color: #64748b;">Pending Payments</h4>
+                        <h2 style="font-size: 2rem;">45</h2>
+                    </div>
+                </div>
+
+                <!-- Quick Access Links -->
+                <h3 style="margin-top: 40px; color:#334155; font-size: 1.1rem;">Quick Access</h3>
+                <div
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 15px;">
+                    <!-- System Users Card -->
+                    <a href="users.html" style="text-decoration:none; color:inherit;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; transition: transform 0.2s; cursor: pointer;"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.1)'"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px;">
+                                <div
+                                    style="background:#e0f2fe; color:#0284c7; width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+                                    <i class="fas fa-users-cog"></i>
+                                </div>
+                                <h4 style="margin:0; color: #1e293b;">System Users</h4>
+                            </div>
+                            <p style="font-size: 0.85rem; color: #64748b; margin:0;">Manage admins, roles, and
+                                permissions.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="global.js"></script>
+    <script>
+        checkSessionAndRenderLayout();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,164 @@
+/* queue-manager/queue.css */
+
+/* Queue Card Styling */
+.queue-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.queue-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.queue-status-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.dot-active {
+    background-color: #22c55e;
+}
+
+.dot-paused {
+    background-color: #f59e0b;
+}
+
+.dot-closed {
+    background-color: #ef4444;
+}
+
+/* Modal specific tweaks */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+    /* SCROLL FIX */
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+@media (max-width: 600px) {
+    .modal-content {
+        padding: 1rem;
+        width: 95%;
+        max-height: 85vh;
+    }
+}
+
+/* Tab Buttons */
+.btn-tab {
+    background: transparent;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #64748b;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-tab.active {
+    background: white;
+    color: #2563eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-tab:hover {
+    color: #1e293b;
+}
+
+
+
+/* Filter Toggles (Active vs Archive) */
+.filter-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+    /* Wraps on very small mobiles */
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* Space between radio circle and text */
+    padding: 8px 16px;
+    border-radius: 99px;
+    /* Pill shape */
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #64748b;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.filter-option:hover {
+    background: #f1f5f9;
+}
+
+/* When the radio inside is checked, style the label */
+.filter-option:has(input:checked) {
+    background: #eff6ff;
+    color: #2563eb;
+    border-color: #bfdbfe;
+}
+
+.filter-option input {
+    margin: 0;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: #2563eb;
+    /* Makes the radio button blue */
+}
+
+/* Mobile: Ensure lists scroll if they get too long */
+@media (max-width: 900px) {
+
+    .waiting-list,
+    .queue-list,
+    .modal-content {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+}

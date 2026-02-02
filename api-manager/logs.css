@@ -1,0 +1,48 @@
+/* api-manager/logs.css */
+
+.log-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.log-success { background: #dcfce7; color: #166534; }
+.log-error { background: #fee2e2; color: #991b1b; }
+.log-rate_limited { background: #ffedd5; color: #9a3412; }
+.log-auth_failed { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
+
+/* Detail Modal Styles */
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.detail-item label {
+    font-size: 0.75rem;
+    color: #64748b;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.detail-item div {
+    font-size: 0.95rem;
+    color: #334155;
+    font-family: monospace;
+    word-break: break-all;
+}
+
+.code-block {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 15px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.85rem;
+    overflow-x: auto;
+}

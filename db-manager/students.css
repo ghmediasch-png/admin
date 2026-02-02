@@ -1,0 +1,37 @@
+/* db-manager/students.css */
+
+.upload-zone {
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    background: #f8fafc;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+}
+
+.upload-zone.dragover {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+
+.upload-zone p { color: #64748b; margin-bottom: 15px; }
+
+.btn-outline {
+    background: white; border: 1px solid #cbd5e1; color: #475569;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem;
+}
+.btn-outline:hover { border-color: #94a3b8; color: #1e293b; }
+
+.badge-level {
+    background: #f1f5f9; color: #475569; font-size: 0.75rem; 
+    padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;
+}
+
+.progress-bar-container {
+    height: 6px; background: #e2e8f0; border-radius: 3px; 
+    overflow: hidden; margin-top: 15px; display: none;
+}
+.progress-bar {
+    height: 100%; background: #2563eb; width: 0%; transition: width 0.3s;
+}

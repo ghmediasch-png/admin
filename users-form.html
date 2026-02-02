@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage User - Admissions Admin</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* Specific styles for the permission grid */
+        .permission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+        }
+        
+        .perm-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .perm-item label {
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Form Layout Tweaks */
+        .form-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Layout injected by global.js -->
+        <div class="main-content">
+            <div class="page-content">
+                
+                <div style="max-width: 800px; margin: 0 auto 20px auto;">
+                    <a href="users.html" style="text-decoration:none; color:#64748b; font-size:0.9rem;">
+                        <i class="fas fa-arrow-left"></i> Back to User List
+                    </a>
+                    <h1 id="pageTitle" style="margin-top:10px;">Create New User</h1>
+                </div>
+
+                <div class="form-section">
+                    <form id="userForm">
+                        <!-- Basic Info -->
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="fullName" placeholder="e.g. John Doe" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="email" placeholder="e.g. admin@school.edu.gh" required>
+                            <small id="emailNote" style="color:#64748b; display:none;">Email cannot be changed after creation.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label id="passwordLabel">Password</label>
+                            <input type="password" id="password" placeholder="Enter secure password" autocomplete="new-password">
+                            <small id="passwordHint" style="color:#64748b; display:none;">Leave blank to keep existing password.</small>
+                        </div>
+
+                        <hr style="margin: 2rem 0; border:0; border-top:1px solid var(--border);">
+
+                        <!-- Roles & Permissions -->
+                        <div class="form-group">
+                            <label>Role</label>
+                            <select id="roleSelect" style="width:100%; padding:0.75rem; border:1px solid var(--border); border-radius:6px;" onchange="handleRoleChange()">
+                                <option value="ADMIN">Admin (Custom Permissions)</option>
+                                <option value="SUPER_ADMIN">Super Admin (Full Access)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Permissions</label>
+                            <div id="permissionsContainer" class="permission-grid">
+                                <!-- Checkboxes injected via JS -->
+                            </div>
+                        </div>
+
+                        <div id="formError" class="error-msg"></div>
+
+                        <div style="margin-top: 2rem; text-align: right;">
+                            <button type="submit" class="btn-primary" style="width: auto; padding: 10px 30px;">
+                                <i class="fas fa-save"></i> Save User
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="global.js"></script>
+    
+    <script>
+        checkSessionAndRenderLayout();
+
+        // --- 1. CONFIGURATION ---
+        const PERMISSIONS_CONFIG = [
+            { key: 'access_root', label: 'Access Main Dashboard', desc: 'Can see overview and logs' },
+            { key: 'access_queue', label: 'Access Queue Manager', desc: 'Can manage queues' },
+            { key: 'access_api', label: 'Access API Manager', desc: 'Can manage API keys' }
+        ];
+
+        // Global State
+        const urlParams = new URLSearchParams(window.location.search);
+        const EDIT_USER_ID = urlParams.get('id'); // If exists, we are in EDIT mode
+        
+        // --- 2. INITIALIZATION ---
+        
+        function initForm() {
+            renderPermissions();
+            
+            if (EDIT_USER_ID) {
+                // Edit Mode Setup
+                document.getElementById('pageTitle').textContent = "Edit User";
+                document.getElementById('email').disabled = true; // Cannot change email
+                document.getElementById('email').style.background = "#f1f5f9";
+                document.getElementById('emailNote').style.display = "block";
+                document.getElementById('passwordHint').style.display = "block";
+                document.getElementById('password').required = false; // Optional in edit
+                
+                loadUserData(EDIT_USER_ID);
+            } else {
+                // Create Mode Setup
+                document.getElementById('password').required = true;
+            }
+        }
+
+        // --- 3. DYNAMIC UI GENERATORS ---
+
+        function renderPermissions() {
+            const container = document.getElementById('permissionsContainer');
+            container.innerHTML = PERMISSIONS_CONFIG.map(perm => `
+                <div class="perm-item" title="${perm.desc}">
+                    <input type="checkbox" id="perm_${perm.key}" value="${perm.key}">
+                    <label for="perm_${perm.key}">${perm.label}</label>
+                </div>
+            `).join('');
+        }
+
+        // Handle Role Logic
+        window.handleRoleChange = function() {
+            const role = document.getElementById('roleSelect').value;
+            const checkboxes = document.querySelectorAll('#permissionsContainer input[type="checkbox"]');
+            
+            if (role === 'SUPER_ADMIN') {
+                // Lock and Check All
+                checkboxes.forEach(cb => {
+                    cb.checked = true;
+                    cb.disabled = true;
+                });
+            } else {
+                // Unlock
+                checkboxes.forEach(cb => {
+                    cb.disabled = false;
+                });
+            }
+        }
+
+        // --- 4. DATA LOADING (Edit Mode) ---
+
+        async function loadUserData(userId) {
+            const { data, error } = await supabase
+                .from('admin_profiles')
+                .select('*')
+                .eq('supabase_uid', userId)
+                .single();
+
+            if (error) {
+                alert("Error loading user: " + error.message);
+                window.location.href = 'users.html';
+                return;
+            }
+
+            // Fill Fields
+            document.getElementById('fullName').value = data.full_name || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('roleSelect').value = data.role;
+
+            // Set Permissions
+            if (data.permissions) {
+                PERMISSIONS_CONFIG.forEach(p => {
+                    const cb = document.getElementById(`perm_${p.key}`);
+                    if(cb) cb.checked = !!data.permissions[p.key];
+                });
+            }
+
+            // Trigger role change logic to lock boxes if Super Admin
+            handleRoleChange();
+        }
+
+        // --- 5. FORM SUBMISSION ---
+
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = e.target.querySelector('button');
+            const errorDiv = document.getElementById('formError');
+            const originalText = btn.innerHTML;
+            
+            // Gather Data
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('roleSelect').value;
+            
+            // Build Permissions Object
+            const permissions = {};
+            PERMISSIONS_CONFIG.forEach(p => {
+                const cb = document.getElementById(`perm_${p.key}`);
+                permissions[p.key] = cb.checked;
+            });
+
+            // Prepare Payload
+            const payload = {
+                full_name: fullName,
+                role: role,
+                permissions: permissions
+            };
+
+            // Setup Action
+            let action = 'create';
+            
+            if (EDIT_USER_ID) {
+                action = 'update';
+                payload.id = EDIT_USER_ID; // Used for WHERE clause
+                if (password) payload.password = password; // Only send if changed
+            } else {
+                payload.email = email;
+                payload.password = password;
+            }
+
+            // UI Feedback
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+            btn.disabled = true;
+            errorDiv.style.display = 'none';
+
+            try {
+                // Call Edge Function
+                const { data, error } = await supabase.functions.invoke('admin-user-manager', {
+                    body: { action, payload }
+                });
+
+                if (error) throw error; // Supabase fetch error
+                if (data && data.error) throw new Error(data.error); // App logic error
+
+                alert(`User ${action === 'create' ? 'created' : 'updated'} successfully!`);
+                window.location.href = 'users.html';
+
+            } catch (err) {
+                console.error(err);
+                errorDiv.textContent = err.message || "Failed to save user.";
+                errorDiv.style.display = 'block';
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        // Run Init
+        initForm();
+
+    </script>
+</body>
+</html>

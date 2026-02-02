@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Admissions Admin</title>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Layout injected by global.js -->
+        <div class="main-content">
+            <div class="page-content">
+                
+                <!-- Page Header -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <h1>System Users</h1>
+                        <p style="color:#64748b; font-size:0.9rem;">Manage admin access and permissions.</p>
+                    </div>
+                    <a href="users-form.html" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                        <i class="fas fa-plus"></i> New User
+                    </a>
+                </div>
+
+                <!-- 1. TOOLBAR (Search) -->
+                <div id="usersToolbar"></div>
+
+                <!-- 2. DATA TABLE -->
+                <div class="table-container">
+                    <table class="data-table" id="usersTable">
+                        <thead>
+                            <tr>
+                                <th>Name / Email</th>
+                                <th>Role</th>
+                                <th>Permissions</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersBody">
+                            <!-- Rows injected by ListController -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 3. PAGINATION -->
+                <div id="usersPagination"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="global.js"></script>
+    <script src="list-controller.js"></script>
+    
+    <script>
+        // 1. Initialize Layout
+        checkSessionAndRenderLayout();
+
+        let currentUserId = null;
+        // Get current user ID to prevent self-deletion
+        supabase.auth.getSession().then(({data}) => {
+            if(data.session) currentUserId = data.session.user.id;
+        });
+
+        // 2. Initialize List Controller
+        window.activeListController = new ListController({
+            tableId: 'usersTable',
+            toolbarId: 'usersToolbar',
+            paginationId: 'usersPagination',
+
+            // A. FETCH DATA
+            fetchData: async ({ from, to, search }) => {
+                let query = supabase
+                    .from('admin_profiles')
+                    .select('*', { count: 'exact' })
+                    .order('created_at', { ascending: false })
+                    .range(from, to);
+
+                // Search Filter
+                if (search) {
+                    query = query.or(`full_name.ilike.%${search}%,email.ilike.%${search}%`);
+                }
+
+                const { data, count, error } = await query;
+                return { data, count, error };
+            },
+
+            // B. RENDER ROW
+            renderRow: (user) => {
+                const date = new Date(user.created_at).toLocaleDateString();
+                
+                // Role Badge Logic
+                const roleBadge = user.role === 'SUPER_ADMIN' 
+                    ? `<span class="status-badge" style="background:#f3e8ff; color:#7e22ce;">🟣 Super Admin</span>`
+                    : `<span class="status-badge" style="background:#e0f2fe; color:#0369a1;">🔵 Admin</span>`;
+
+                // Permissions Count
+                const permCount = user.permissions ? Object.values(user.permissions).filter(v => v === true).length : 0;
+                
+                // Actions Logic
+                // Prevent deleting yourself
+                const isSelf = user.supabase_uid === currentUserId;
+                const deleteBtn = isSelf 
+                    ? `<span style="color:#cbd5e1; font-size:0.8rem; margin-left:10px;">(You)</span>` 
+                    : `<button onclick="deleteUser('${user.supabase_uid}', '${user.email}')" class="btn-retry" style="color:#dc2626; border-color:#fee2e2;" title="Delete User"><i class="fas fa-trash"></i></button>`;
+
+                return `
+                    <tr>
+                        <td>
+                            <div style="font-weight:600; color:#1e293b;">${user.full_name || 'No Name'}</div>
+                            <div style="font-size:0.85rem; color:#64748b;">${user.email}</div>
+                        </td>
+                        <td>${roleBadge}</td>
+                        <td>
+                            <span style="font-size:0.85rem; color:#475569;">
+                                <i class="fas fa-key"></i> ${permCount} active
+                            </span>
+                        </td>
+                        <td>${date}</td>
+                        <td>
+                            <a href="users-form.html?id=${user.supabase_uid}" class="btn-retry" title="Edit User">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            ${deleteBtn}
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+
+        // 3. DELETE USER FUNCTION (Calls Edge Function)
+        async function deleteUser(id, email) {
+            if(!confirm(`Are you sure you want to PERMANENTLY delete ${email}?`)) return;
+
+            const btn = document.activeElement;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                // Call the Edge Function
+                const { data, error } = await supabase.functions.invoke('admin-user-manager', {
+                    body: { action: 'delete', payload: { id: id } }
+                });
+
+                if (error) throw error;
+
+                alert("User deleted successfully.");
+                window.activeListController.loadData(); // Refresh Table
+
+            } catch (err) {
+                console.error(err);
+                alert("Error deleting user: " + (err.message || "Unknown error"));
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

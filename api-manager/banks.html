@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="banks.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar injected by global.js -->
+        
+        <div class="main-content">
+            <div class="page-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <div>
+                        <h1>Bank Management</h1>
+                        <p style="color:#64748b;">Issue and revoke API access for partners.</p>
+                    </div>
+                    <button class="btn-primary" onclick="openAddModal()" style="width:auto;">
+                        <i class="fas fa-plus-circle"></i> Onboard Bank
+                    </button>
+                </div>
+
+                <!-- Banks Table -->
+                <div class="table-container">
+                    <table class="data-table" id="banksTable">
+                        <thead>
+                            <tr>
+                                <th>Bank Name</th>
+                                <th>API Key Prefix</th>
+                                <th>Status</th>
+                                <th>Requests (Today)</th>
+                                <th>Expires</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="banksBody">
+                            <tr><td colspan="6" style="text-align:center;">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. Add Bank Modal -->
+    <!-- IMPORTANT: This ID 'addModal' MUST exist for the JS to work -->
+    <div id="addModal" class="sidebar-overlay">
+        <div class="auth-card modal-card-default">
+            <h2 style="text-align:left;">Onboard New Bank</h2>
+            <form id="addBankForm">
+                <div class="form-group">
+                    <label>Bank Name</label>
+                    <input type="text" id="bName" required placeholder="e.g. Ghana Commercial Bank">
+                </div>
+                <div class="form-group">
+                    <label>Contact Email</label>
+                    <input type="email" id="bEmail" required placeholder="dev@gcb.com">
+                </div>
+                <div class="form-group">
+                    <label>Contact Phone</label>
+                    <input type="tel" id="bPhone" required placeholder="024xxxxxxx">
+                </div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="button" class="btn-retry" onclick="closeModals()">Cancel</button>
+                    <button type="submit" class="btn-primary">Generate Key</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Key Reveal Modal -->
+    <div id="keyModal" class="sidebar-overlay" style="z-index: 100;">
+        <div class="auth-card modal-card-success">
+            <h2 class="text-success"><i class="fas fa-check-circle"></i> Bank Created</h2>
+            <p style="color:#64748b; margin-bottom:20px;">
+                Please copy this API Key immediately. It will <strong>never</strong> be shown again.
+            </p>
+            
+            <div class="key-reveal-card">
+                <div style="font-size:0.8rem; text-transform:uppercase; font-weight:bold; color:#15803d;">API Key</div>
+                <div id="newKeyDisplay" class="api-key-display">sk_live_...</div>
+                <button onclick="copyKey()" class="btn-retry" style="font-size:0.8rem;">
+                    <i class="fas fa-copy"></i> Copy to Clipboard
+                </button>
+            </div>
+
+            <div style="text-align:right;">
+                <button class="btn-primary" onclick="window.location.reload()" style="width:auto;">I have copied it</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logic -->
+    <script src="../global.js"></script>
+    <script src="banks.js"></script>
+    <script>checkSessionAndRenderLayout();</script>
+</body>
+</html>

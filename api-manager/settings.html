@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API System Settings</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="settings.css"> 
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar injected by global.js -->
+        
+        <div class="main-content">
+            <div class="page-content">
+                <div style="margin-bottom: 20px;">
+                    <h1>System Configuration</h1>
+                    <p style="color:#64748b;">Global security settings and rate limits.</p>
+                </div>
+
+                <div id="settingsContainer" class="settings-wrapper">
+                    <p>Loading settings...</p>
+                </div>
+
+                <div style="margin-top: 30px; text-align: right; max-width: 800px;">
+                    <button onclick="saveSettings()" class="btn-primary" style="width: auto; padding: 12px 30px;">
+                        <i class="fas fa-save"></i> Save Configuration
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../global.js"></script>
+    <script src="settings.js"></script>
+    <script>checkSessionAndRenderLayout();</script>
+</body>
+</html>
