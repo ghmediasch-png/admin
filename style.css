@@ -725,7 +725,7 @@ button.btn-primary:hover {
     color: #166534; /* Green */
 }
 
-/* Bank Badge in Table */
+/* Bank Badge in Table  */
 .badge-source {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; border: 1px solid #e2e8f0;
