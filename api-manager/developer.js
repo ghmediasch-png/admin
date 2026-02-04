@@ -2,23 +2,19 @@
 
 // Configuration
 const PROJECT_REF = 'fyriapqeztevzkcaaiqw'; 
-const EDGE_URL = `https://${PROJECT_REF}.supabase.co/functions/v1/bank-gateway`;
+const URL_VERIFY  = `https://${PROJECT_REF}.supabase.co/functions/v1/bank-gateway`;
+const URL_PAYMENT = `https://${PROJECT_REF}.supabase.co/functions/v1/payment-webhook`;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Populate URL in docs and sandbox
-    const docUrl = document.getElementById('docUrl');
-    const sandboxUrl = document.getElementById('sandboxUrl');
-    
-    if(docUrl) docUrl.textContent = EDGE_URL;
-    if(sandboxUrl) sandboxUrl.value = EDGE_URL;
+    // Default Init
+    toggleMode();
 });
 
+// UI: Tab Switching (Docs vs Sandbox)
 function switchTab(tab) {
-    // UI Toggles
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.getElementById(`btn-${tab}`).classList.add('active');
 
-    // View Toggles
     const docsView = document.getElementById('view-docs');
     const sandboxView = document.getElementById('view-sandbox');
 
@@ -31,28 +27,74 @@ function switchTab(tab) {
     }
 }
 
+// UI: Mode Switching (Verify vs Payment)
+function toggleMode() {
+    const mode = document.querySelector('input[name="reqMode"]:checked').value;
+    const urlInput = document.getElementById('sandboxUrl');
+    const payFields = document.getElementById('paymentFields');
+
+    if (mode === 'verify') {
+        urlInput.value = URL_VERIFY;
+        payFields.classList.add('hidden');
+    } else {
+        urlInput.value = URL_PAYMENT;
+        payFields.classList.remove('hidden');
+        // Auto-generate a ref if empty to be helpful
+        if(!document.getElementById('sandboxRef').value) generateRef();
+    }
+}
+
+// Helper: Generate Random Transaction Ref
+function generateRef() {
+    const random = Math.floor(Math.random() * 1000000);
+    document.getElementById('sandboxRef').value = `TXN-${random}`;
+}
+
+// Logic: Execute API Call
 async function runTest() {
     const btn = document.getElementById('testBtn');
     const output = document.getElementById('sandboxOutput');
+    const mode = document.querySelector('input[name="reqMode"]:checked').value;
     
-    // 1. Capture Values & Debug
+    // Common Inputs
     const rawKey = document.getElementById('sandboxKey').value;
     const key = rawKey ? rawKey.trim() : '';
     const id = document.getElementById('sandboxId').value.trim();
 
-    // DEBUG LOGS (Check Console F12)
-    console.log("--- SANDBOX DEBUG ---");
-    console.log("Target URL:", EDGE_URL);
-    console.log("Raw Key Input:", `"${rawKey}"`); // Quotes help see spaces
-    console.log("Trimmed Key:", `"${key}"`);
-    console.log("Key Length:", key.length);
-    console.log("Student ID:", id);
-    console.log("---------------------");
-
+    // Validation
     if (!key || !id) {
         output.textContent = "Error: Please provide API Key and Student ID.";
         output.style.color = "#f87171";
         return;
+    }
+
+    // Construct Payload & Select URL
+    let targetUrl = '';
+    let payload = {};
+
+    if (mode === 'verify') {
+        targetUrl = URL_VERIFY;
+        payload = { 
+            action: 'verify_student', 
+            student_id: id 
+        };
+    } else {
+        targetUrl = URL_PAYMENT;
+        const amount = document.getElementById('sandboxAmount').value;
+        const ref = document.getElementById('sandboxRef').value;
+
+        if (!amount || !ref) {
+            output.textContent = "Error: Amount and Transaction Ref required for payments.";
+            output.style.color = "#f87171";
+            return;
+        }
+
+        payload = {
+            student_id: id,
+            amount: parseFloat(amount),
+            transaction_ref: ref,
+            payment_date: new Date().toISOString()
+        };
     }
 
     // Reset UI
@@ -64,27 +106,21 @@ async function runTest() {
     const startTime = Date.now();
 
     try {
-        // 2. Send Request
-        const response = await fetch(EDGE_URL, {
+        const response = await fetch(targetUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': key // Ensure lowercase header
+                'x-api-key': key
             },
-            body: JSON.stringify({ 
-                action: 'verify_student', // Required by Edge Function
-                student_id: id 
-            })
+            body: JSON.stringify(payload)
         });
 
         const data = await response.json();
         const duration = Date.now() - startTime;
 
-        // Formatting Output
         const statusLine = `HTTP ${response.status} ${response.statusText} (${duration}ms)\n\n`;
         output.textContent = statusLine + JSON.stringify(data, null, 2);
 
-        // Color coding
         if (response.ok) {
             output.style.color = "#4ade80"; // Green
         } else {
@@ -92,7 +128,7 @@ async function runTest() {
         }
 
     } catch (err) {
-        console.error("Network Logic Error:", err);
+        console.error("Network Error:", err);
         output.textContent = "Network Error: " + err.message;
         output.style.color = "#f87171";
     } finally {
