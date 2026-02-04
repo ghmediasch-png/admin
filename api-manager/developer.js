@@ -82,6 +82,7 @@ async function runTest() {
         targetUrl = URL_PAYMENT;
         const amount = document.getElementById('sandboxAmount').value;
         const ref = document.getElementById('sandboxRef').value;
+        const feeType = document.getElementById('sandboxFeeType').value;
 
         if (!amount || !ref) {
             output.textContent = "Error: Amount and Transaction Ref required for payments.";
@@ -93,6 +94,7 @@ async function runTest() {
             student_id: id,
             amount: parseFloat(amount),
             transaction_ref: ref,
+            fee_type: feeType,
             payment_date: new Date().toISOString()
         };
     }

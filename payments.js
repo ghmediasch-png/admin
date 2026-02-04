@@ -14,11 +14,12 @@ async function fetchPayments({ from, to, search, date }) {
     let query = supabase
         .from('payments')
         .select('*', { count: 'exact' })
-        .order('payment_date', { ascending: false }) // Newest first
+        .order('payment_date', { ascending: false })
         .range(from, to);
 
     if (search) {
-        query = query.or(`student_name.ilike.%${search}%,student_id.ilike.%${search}%,transaction_ref.ilike.%${search}%`);
+        // UPDATED: Added fee_type to search
+        query = query.or(`student_name.ilike.%${search}%,student_id.ilike.%${search}%,transaction_ref.ilike.%${search}%,fee_type.ilike.%${search}%`);
     }
     if (date) {
         const start = `${date}T00:00:00`;
@@ -38,7 +39,6 @@ function renderPaymentRow(p) {
     const amount = new Intl.NumberFormat('en-GH', { style: 'currency', currency: 'GHS' }).format(p.amount);
 
     // Source Badge Logic
-    // If bank_source exists, it's API. If source_table is 'payments' and bank_source is null, it's Manual.
     let sourceBadge = '';
     if (p.bank_source) {
         sourceBadge = `<span class="badge-source badge-api"><i class="fas fa-server"></i> ${p.bank_source}</span>`;
@@ -62,6 +62,12 @@ function renderPaymentRow(p) {
                 <div style="font-size:0.8rem; font-family:monospace; color:#64748b;">${p.student_id}</div>
             </td>
             <td style="font-weight:700; color:#0f172a;">${amount}</td>
+            
+            <!-- NEW COLUMN: Fee Type -->
+            <td style="font-size:0.9rem; color:#475569; font-weight:500;">
+                ${p.fee_type || 'Tuition Fees'}
+            </td>
+
             <td style="font-family:monospace; color:#64748b;">${p.transaction_ref}</td>
             <td>${sourceBadge}</td>
             <td><span class="status-badge ${statusClass}">${p.status}</span></td>
@@ -73,7 +79,6 @@ function renderPaymentRow(p) {
 async function loadDailyStats() {
     const todayStart = new Date().toISOString().split('T')[0] + 'T00:00:00';
     
-    // Fetch ALL payments for today
     const { data, error } = await supabase
         .from('payments')
         .select('amount, bank_source')
@@ -109,7 +114,6 @@ async function exportPayments() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
     btn.disabled = true;
 
-    // Fetch ALL Data (Limit 5000 for safety, or implement chunking for massive datasets)
     const { data, error } = await supabase
         .from('payments')
         .select('*')
@@ -123,19 +127,17 @@ async function exportPayments() {
         return;
     }
 
-    // Process for CSV
     const csvData = data.map(p => ({
         Date: new Date(p.payment_date).toLocaleString(),
         Student_ID: p.student_id,
         Student_Name: p.student_name,
         Amount: p.amount,
+        Fee_Type: p.fee_type || 'Tuition Fees', // Ensure it's in export
         Reference: p.transaction_ref,
         Source: p.bank_source || 'Manual',
-        Status: p.status,
-        Fee_Type: p.fee_type
+        Status: p.status
     }));
 
-    // Convert & Download
     const csv = Papa.unparse(csvData);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
