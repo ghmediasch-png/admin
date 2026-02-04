@@ -133,6 +133,7 @@ function renderLayout(email, profile) {
         // --- MAIN ROOT MENU ---
         menuItems = [
             { name: 'Admissions Dash', link: 'dashboard.html', icon: 'fa-university', permission: 'access_root' },
+            { name: 'Payments Ledger', link: 'payments.html', icon: 'fa-money-bill-wave', roleReq: 'SUPER_ADMIN' },
             { name: 'SMS Logs', link: 'sms-logs.html', icon: 'fa-clipboard-list', permission: 'access_root' },
             { name: 'SMS Templates', link: 'sms-templates.html', icon: 'fa-cog', roleReq: 'SUPER_ADMIN' },
             { name: 'System Users', link: 'users.html', icon: 'fa-users-cog', roleReq: 'SUPER_ADMIN' },
