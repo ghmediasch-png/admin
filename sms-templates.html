@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,17 +9,25 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
     <div class="admin-layout">
         <!-- Sidebar/Header injected by global.js -->
-        
+
         <div class="main-content">
             <div class="page-content">
-                <h1>SMS Templates</h1>
-                <p style="color: #64748b; margin-top: 10px; margin-bottom: 20px;">
-                    Edit the automated messages sent by the system.
-                </p>
-                
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                    <div>
+                        <h1>SMS Templates</h1>
+                        <p style="color: #64748b; margin-top: 5px;">
+                            Edit the automated messages sent by the system.
+                        </p>
+                    </div>
+                    <button onclick="openAddModal()" class="btn-primary" style="width:auto; padding: 10px 20px;">
+                        <i class="fas fa-plus"></i> Add New Template
+                    </button>
+                </div>
+
                 <div id="loading" style="text-align: center; padding: 40px; color: #64748b;">
                     Loading templates...
                 </div>
@@ -26,6 +35,56 @@
                 <!-- Template Grid Container -->
                 <div id="templateGrid" class="template-grid"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Add Template Modal -->
+    <div id="addModal" class="sidebar-overlay" style="z-index: 9999;">
+        <div class="auth-card"
+            style="max-width: 600px; width: 90%; background: white; padding: 25px; border-radius: 12px; position: relative;">
+            <button onclick="closeAddModal()"
+                style="position: absolute; top: 15px; right: 15px; border: none; background: none; font-size: 1.2rem; cursor: pointer; color: #64748b;">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 style="margin-bottom: 20px;"><i class="fas fa-plus-circle"></i> Add New Template</h2>
+
+            <form id="addTemplateForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group">
+                        <label>Template Name</label>
+                        <input type="text" id="newName" required placeholder="e.g. Admission Success">
+                    </div>
+                    <div class="form-group">
+                        <label>Template Slug</label>
+                        <input type="text" id="newSlug" required placeholder="e.g. admission_success">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Category</label>
+                    <input type="text" id="newCategory" required placeholder="e.g. ADMISSIONS" value="ADMISSIONS">
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Base URL (Optional)</label>
+                    <input type="text" id="newUrl" placeholder="https://ghschools.edu.gh/...">
+                    <p style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">
+                        Used to generate {{link}}. <strong>Note:</strong> Avoid trailing slashes if using query parameters (e.g. <code>?ref=</code>).
+                    </p>
+                </div>
+
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Message Content</label>
+                    <textarea id="newContent" class="template-editor" style="min-height: 100px;" required
+                        placeholder="Hi {{first_name}}, ..."></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px;">
+                    <button type="button" onclick="closeAddModal()" class="btn-retry"
+                        style="width: auto;">Cancel</button>
+                    <button type="submit" class="btn-primary" style="width: auto;">Create Template</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -38,7 +97,7 @@
         async function loadTemplates() {
             const grid = document.getElementById('templateGrid');
             const loader = document.getElementById('loading');
-            
+
             const { data: templates, error } = await supabase
                 .from('sms_templates')
                 .select('*')
@@ -55,8 +114,13 @@
             grid.innerHTML = templates.map(t => `
                 <div class="template-card" id="card-${t.id}">
                     <div class="template-header">
-                        <span class="template-title">${t.template_name}</span>
-                        <span class="template-slug">${t.template_slug}</span>
+                        <div>
+                            <span class="template-title">${t.template_name}</span>
+                            <span class="template-slug">${t.template_slug}</span>
+                        </div>
+                        <button onclick="deleteTemplate('${t.id}')" class="btn-icon" style="color: #ef4444; background: #fee2e2; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;" title="Delete Template">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
                     
                     <div class="variables-tip">
@@ -76,6 +140,7 @@
                                style="font-family: monospace; font-size: 0.9rem;">
                         <p style="font-size: 0.75rem; color: #64748b; margin-top: 6px;">
                             This URL is joined with the Reference Code to create <strong>{{link}}</strong>.
+                            <br><span style="color: #e11d48; font-weight: 600;">⚠️ Check for extra slashes if your URL ends with <code>?ref=</code></span>
                         </p>
                     </div>
 
@@ -103,7 +168,7 @@
             const newContent = document.getElementById(`msg-${id}`).value;
             const newBaseUrl = document.getElementById(`url-${id}`).value;
             const isActive = document.getElementById(`active-${id}`).checked;
-            
+
             const btn = document.querySelector(`#card-${id} button`);
             const feedback = document.getElementById(`feedback-${id}`);
 
@@ -114,7 +179,7 @@
 
             const { error } = await supabase
                 .from('sms_templates')
-                .update({ 
+                .update({
                     message_content: newContent,
                     base_url: newBaseUrl,
                     is_active: isActive,
@@ -135,7 +200,70 @@
             }
         }
 
+        // 4. Modal Functions
+        function openAddModal() {
+            document.getElementById('addModal').style.display = 'flex';
+            document.getElementById('addModal').classList.add('open');
+        }
+
+        function closeAddModal() {
+            document.getElementById('addModal').style.display = 'none';
+            document.getElementById('addModal').classList.remove('open');
+            document.getElementById('addTemplateForm').reset();
+        }
+
+        // 5. Create Function
+        document.getElementById('addTemplateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+
+            btn.textContent = "Creating...";
+            btn.disabled = true;
+
+            const payload = {
+                template_name: document.getElementById('newName').value,
+                template_slug: document.getElementById('newSlug').value,
+                category: document.getElementById('newCategory').value,
+                base_url: document.getElementById('newUrl').value,
+                message_content: document.getElementById('newContent').value,
+                is_active: true,
+                created_at: new Date()
+            };
+
+            const { error } = await supabase
+                .from('sms_templates')
+                .insert([payload]);
+
+            btn.disabled = false;
+            btn.textContent = originalText;
+
+            if (error) {
+                alert("Error creating template: " + error.message);
+            } else {
+                closeAddModal();
+                loadTemplates();
+            }
+        });
+
+        // 6. Delete Function
+        async function deleteTemplate(id) {
+            if (!confirm("Are you sure you want to delete this template? This cannot be undone.")) return;
+
+            const { error } = await supabase
+                .from('sms_templates')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                alert("Error deleting template: " + error.message);
+            } else {
+                loadTemplates();
+            }
+        }
+
         loadTemplates();
     </script>
 </body>
+
 </html>
