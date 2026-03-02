@@ -71,6 +71,11 @@
                     <p style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">
                         Used to generate {{link}}. <strong>Note:</strong> Avoid trailing slashes if using query parameters (e.g. <code>?ref=</code>).
                     </p>
+                    <p id="add-slug-note" style="font-size:0.75rem;color:#065f46;margin-top:4px;display:none;">
+                        When the slug is <code>admissions_purchase_success</code> the system will
+                        append <code>?ref=</code> automatically on save, so just supply the
+                        bare URL (e.g. <code>http://ghschools.edu.gh/admissionforms.html</code>).
+                    </p>
                 </div>
 
                 <div class="form-group" style="margin-top: 15px;">
@@ -135,12 +140,17 @@
                         <label style="font-size: 0.8rem; font-weight: 700; color: #475569; margin-bottom: 8px; display:block;">
                             <i class="fas fa-link"></i> Link Base URL
                         </label>
-                        <input type="text" id="url-${t.id}" value="${t.base_url || ''}" 
+                        <input type="text" id="url-${t.id}" value="${t.template_slug === 'admissions_purchase_success' ? (t.base_url || '').replace(/[?&]?ref=$/, '') : (t.base_url || '')}" 
                                placeholder="https://your-site.com/" 
                                style="font-family: monospace; font-size: 0.9rem;">
                         <p style="font-size: 0.75rem; color: #64748b; margin-top: 6px;">
                             This URL is joined with the Reference Code to create <strong>{{link}}</strong>.
-                            <br><span style="color: #e11d48; font-weight: 600;">⚠️ Check for extra slashes if your URL ends with <code>?ref=</code></span>
+                        </p>
+                        <!-- admission form purchase special note -->
+                        <p class="admission-ref-note" style="font-size:0.75rem;color:#065f46;margin-top:4px;display:${t.template_slug==='admissions_purchase_success' ? 'block' : 'none'};">
+                            <i class="fas fa-info-circle"></i> <code>?ref=</code> is appended automatically for this template.
+                            Enter only the base URL (e.g. <code>http://ghschools.edu.gh/admissionforms.html</code>).
+                            Final link will be: <strong><code id="link-preview-${t.id}">${t.template_slug === 'admissions_purchase_success' ? (t.base_url || '').replace(/[?&]?ref=$/, '') + '?ref=<reference_code>' : ''}</code></strong>
                         </p>
                     </div>
 
@@ -166,8 +176,21 @@
         // 3. Save Function
         async function saveTemplate(id) {
             const newContent = document.getElementById(`msg-${id}`).value;
-            const newBaseUrl = document.getElementById(`url-${id}`).value;
+            let newBaseUrl = document.getElementById(`url-${id}`).value;
             const isActive = document.getElementById(`active-${id}`).checked;
+
+            // For admissions_purchase_success: always store base_url with ?ref= appended.
+            // Strip any existing ref= first (idempotent), then re-append cleanly.
+            const slugElem = document.querySelector(`#card-${id} .template-slug`);
+            const slug = slugElem ? slugElem.textContent.trim() : null;
+            if (slug === 'admissions_purchase_success' && newBaseUrl) {
+                // Remove any previously stored ?ref= or &ref= (clean slate)
+                newBaseUrl = newBaseUrl.replace(/[?&]ref=$/, '').replace(/[?&]$/, '');
+                // Re-append correctly
+                newBaseUrl += newBaseUrl.includes('?') ? '&ref=' : '?ref=';
+                // Show clean base URL in input (without ?ref=)
+                document.getElementById(`url-${id}`).value = newBaseUrl.replace(/[?&]ref=$/, '');
+            }
 
             const btn = document.querySelector(`#card-${id} button`);
             const feedback = document.getElementById(`feedback-${id}`);
@@ -204,6 +227,22 @@
         function openAddModal() {
             document.getElementById('addModal').style.display = 'flex';
             document.getElementById('addModal').classList.add('open');
+
+            // attach listener to slug field to show special note when relevant
+            const slugInput = document.getElementById('newSlug');
+            const note = document.getElementById('add-slug-note');
+            if (slugInput && note) {
+                function updateNote() {
+                    if (slugInput.value.trim() === 'admissions_purchase_success') {
+                        note.style.display = 'block';
+                    } else {
+                        note.style.display = 'none';
+                    }
+                }
+                slugInput.addEventListener('input', updateNote);
+                // run once in case the user opens modal with pre-filled value (unlikely)
+                updateNote();
+            }
         }
 
         function closeAddModal() {
@@ -221,11 +260,25 @@
             btn.textContent = "Creating...";
             btn.disabled = true;
 
+            let baseUrl = document.getElementById('newUrl').value;
+            const newSlugVal = document.getElementById('newSlug').value.trim();
+            // automatically append ?ref= for the admissions_purchase_success slug
+            if (newSlugVal === 'admissions_purchase_success' && baseUrl) {
+                if (!/\bref=/.test(baseUrl)) {
+                    if (baseUrl.includes('?')) {
+                        if (!baseUrl.endsWith('&')) baseUrl += '&';
+                        baseUrl += 'ref=';
+                    } else {
+                        baseUrl += '?ref=';
+                    }
+                    document.getElementById('newUrl').value = baseUrl;
+                }
+            }
             const payload = {
                 template_name: document.getElementById('newName').value,
-                template_slug: document.getElementById('newSlug').value,
+                template_slug: newSlugVal,
                 category: document.getElementById('newCategory').value,
-                base_url: document.getElementById('newUrl').value,
+                base_url: baseUrl,
                 message_content: document.getElementById('newContent').value,
                 is_active: true,
                 created_at: new Date()

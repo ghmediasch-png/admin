@@ -51,6 +51,48 @@ serve(async (req) => {
 
     console.log(`📝 Using template: ${template_key}`);
 
+    // ---- robust link normalization for admissions form ----
+    // Callers sometimes send `link` already composed using naive slash logic
+    // (see queue/client snippet: `baseUrl + '/' + cleanRef`).  that produced
+    // `...html/jzxm4R` instead of `...?ref=jzxm4R`.  rather than relying on the
+    // caller we rebuild the URL here, using whichever pieces we can obtain.
+    if (template_key === 'admissions_purchase_success') {
+        // reference code may come under different keys depending on source
+        const code = 
+            template_data.reference_code ||
+            template_data.reference ||
+            // if the caller already sent a link, try to extract the trailing bit
+            ((typeof template_data.link === 'string' && template_data.link.split('/').pop()) ||
+             '');
+
+        // determine a base URL; prefer template record, then data, then strip from
+        // an already‑provided link if necessary.
+        let base = template.base_url || template_data.base_url || '';
+        if (!base && template_data.link && code) {
+            // remove trailing code (with or without preceding slash or param)
+            base = template_data.link.replace(new RegExp(`${code}$`), '');
+        }
+
+        if (code) {
+            // if we still haven’t got a base, keep whatever link was there and bail
+            if (!base) {
+                template_data.link = template_data.link || code;
+            } else {
+                // append ?ref= or &ref= depending on existing query string
+                if (!/\bref=/.test(base)) {
+                    if (base.includes('?')) {
+                        if (!base.endsWith('?') && !base.endsWith('&')) base += '&';
+                        base += 'ref=';
+                    } else {
+                        base += '?ref=';
+                    }
+                }
+                template_data.link = base + code;
+            }
+            console.log('🔗 normalized link for admissions_purchase_success:', template_data.link);
+        }
+    }
+
     // Process template (replace placeholders)
     const message = processTemplate(template.message_template, template_data);
 
