@@ -136,6 +136,7 @@ function renderLayout(email, profile) {
             { name: 'Payments Ledger', link: 'payments.html', icon: 'fa-money-bill-wave', roleReq: 'SUPER_ADMIN' },
             { name: 'SMS Logs', link: 'sms-logs.html', icon: 'fa-clipboard-list', permission: 'access_root' },
             { name: 'SMS Templates', link: 'sms-templates.html', icon: 'fa-cog', roleReq: 'SUPER_ADMIN' },
+            { name: 'Admissions Auto-SMS', link: 'adm-sms-automation.html', icon: 'fa-robot', roleReq: 'SUPER_ADMIN' },
             { name: 'System Users', link: 'users.html', icon: 'fa-users-cog', roleReq: 'SUPER_ADMIN' },
             { name: 'Database Mgmt', link: 'db-manager/students.html', icon: 'fa-database', roleReq: 'SUPER_ADMIN' },
             { name: 'Queue Manager', link: queuePrefix + 'dashboard.html', icon: 'fa-users-line', permission: 'access_queue' },

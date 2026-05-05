@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admissions SMS Automation - GH Schools</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <main class="main-content">
+            <div class="page-content">
+                <div class="section-header" style="margin-bottom: 2rem;">
+                    <h2>Admissions SMS Automation</h2>
+                    <p style="color: #64748b;">Configure automatic SMS triggers for successful admission payments.</p>
+                </div>
+
+                <div class="template-grid" id="automationContainer">
+                    <!-- The Card will be injected here by JS -->
+                    <div class="loading">Loading configuration...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="global.js"></script>
+    <script>
+        // Check session on load
+        document.addEventListener('DOMContentLoaded', checkSessionAndRenderLayout);
+
+        const SLUG = 'adm_form_purchase';
+
+        async function loadAutomationConfig() {
+            const container = document.getElementById('automationContainer');
+
+            const { data, error } = await supabase
+                .from('sms_templates')
+                .select('*')
+                .eq('template_slug', SLUG) // Corrected column name
+                .single();
+
+            if (error) {
+                container.innerHTML = `<div class="error-msg" style="display:block">Error loading config: ${error.message}</div>`;
+                return;
+            }
+
+            renderCard(data);
+        }
+
+        function renderCard(config) {
+            const container = document.getElementById('automationContainer');
+            container.innerHTML = `
+        <div class="template-card" style="max-width: 600px;">
+            <div class="template-header">
+                <div>
+                    <div class="template-title">${config.template_name}</div>
+                    <div class="template-slug">Trigger: admission_payments (status: success)</div>
+                </div>
+                <label class="status-toggle">
+                    <input type="checkbox" id="toggleActive" ${config.is_active ? 'checked' : ''}>
+                    <span>${config.is_active ? 'ACTIVE' : 'INACTIVE'}</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label>Base URL</label>
+                <input type="text" id="baseUrl" value="${config.base_url || ''}" placeholder="http://ghschools.edu.gh/">
+            </div>
+
+            <div class="form-group">
+                <label>Target Page</label>
+                <input type="text" id="targetPage" value="${config.target_page || ''}" placeholder="admissionforms.html">
+            </div>
+
+            <div class="form-group">
+                <label>Message Template</label>
+                <!-- Corrected column name: message_content -->
+                <textarea id="messageContent" class="template-editor">${config.message_content || ''}</textarea>
+            </div>
+
+            <div class="variables-tip">
+                Available Variables: 
+                <span class="variable-tag">{{first_name}}</span>, 
+                <span class="variable-tag">{{username}}</span>, 
+                <span class="variable-tag">{{password}}</span>, 
+                <span class="variable-tag">{{url}}</span>
+            </div>
+
+            <div class="card-actions">
+                <button onclick="saveConfig()" class="btn-primary" style="width: auto; padding: 0.5rem 2rem;">
+                    <i class="fas fa-save"></i> Save Configuration
+                </button>
+            </div>
+        </div>
+    `;
+        }
+
+        async function saveConfig() {
+            const is_active = document.getElementById('toggleActive').checked;
+            const base_url = document.getElementById('baseUrl').value;
+            const target_page = document.getElementById('targetPage').value;
+            const message_content = document.getElementById('messageContent').value; // Corrected name
+
+            const { error } = await supabase
+                .from('sms_templates')
+                .update({
+                    is_active,
+                    base_url,
+                    target_page,
+                    message_content // Corrected name
+                })
+                .eq('template_slug', SLUG); // Corrected name
+
+            if (error) {
+                alert("Update failed: " + error.message);
+            } else {
+                alert("Configuration saved successfully!");
+                loadAutomationConfig();
+            }
+        }
+
+        loadAutomationConfig();
+    </script>
+</body>
+
+</html>
