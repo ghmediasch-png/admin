@@ -29,101 +29,101 @@
 
     <script src="global.js"></script>
     <script>
-        // Check session on load
-        document.addEventListener('DOMContentLoaded', checkSessionAndRenderLayout);
+        // --- CONFIG ---
+        const AUTOMATION_CATEGORY = 'AUTOMATION';
 
-        const SLUG = 'adm_form_purchase';
-
-        async function loadAutomationConfig() {
+        async function loadAutomations() {
             const container = document.getElementById('automationContainer');
 
+            // Fetch all automation-related templates
             const { data, error } = await supabase
                 .from('sms_templates')
                 .select('*')
-                .eq('template_slug', SLUG) // Corrected column name
-                .single();
+                .eq('category', AUTOMATION_CATEGORY)
+                .order('template_name', { ascending: true });
 
             if (error) {
-                container.innerHTML = `<div class="error-msg" style="display:block">Error loading config: ${error.message}</div>`;
+                container.innerHTML = `<div class="error-msg" style="display:block">Error: ${error.message}</div>`;
                 return;
             }
 
-            renderCard(data);
+            container.innerHTML = ''; // Clear loading
+            data.forEach(config => renderCard(config));
         }
 
         function renderCard(config) {
             const container = document.getElementById('automationContainer');
-            container.innerHTML = `
-        <div class="template-card" style="max-width: 600px;">
+            const cardId = `card-${config.template_slug}`;
+
+            // Dynamic variable tips based on slug
+            const variables = config.template_slug === 'adm_form_purchase'
+                ? '{{first_name}}, {{username}}, {{password}}, {{url}}'
+                : '{{first_name}}, {{username}}, {{password}}, {{url}}';
+
+            const cardHtml = `
+        <div class="template-card" id="${cardId}" style="margin-bottom: 2rem; border-left: 4px solid var(--primary);">
             <div class="template-header">
                 <div>
                     <div class="template-title">${config.template_name}</div>
-                    <div class="template-slug">Trigger: admission_payments (status: success)</div>
+                    <div class="template-slug">SLUG: ${config.template_slug}</div>
                 </div>
                 <label class="status-toggle">
-                    <input type="checkbox" id="toggleActive" ${config.is_active ? 'checked' : ''}>
+                    <input type="checkbox" id="toggle-${config.template_slug}" ${config.is_active ? 'checked' : ''}>
                     <span>${config.is_active ? 'ACTIVE' : 'INACTIVE'}</span>
                 </label>
             </div>
 
             <div class="form-group">
                 <label>Base URL</label>
-                <input type="text" id="baseUrl" value="${config.base_url || ''}" placeholder="http://ghschools.edu.gh/">
+                <input type="text" id="url-${config.template_slug}" value="${config.base_url || ''}">
             </div>
 
             <div class="form-group">
                 <label>Target Page</label>
-                <input type="text" id="targetPage" value="${config.target_page || ''}" placeholder="admissionforms.html">
+                <input type="text" id="page-${config.template_slug}" value="${config.target_page || ''}">
             </div>
 
             <div class="form-group">
                 <label>Message Template</label>
-                <!-- Corrected column name: message_content -->
-                <textarea id="messageContent" class="template-editor">${config.message_content || ''}</textarea>
+                <textarea id="msg-${config.template_slug}" class="template-editor">${config.message_content || ''}</textarea>
             </div>
 
-            <div class="variables-tip">
-                Available Variables: 
-                <span class="variable-tag">{{first_name}}</span>, 
-                <span class="variable-tag">{{username}}</span>, 
-                <span class="variable-tag">{{password}}</span>, 
-                <span class="variable-tag">{{url}}</span>
-            </div>
+            <div class="variables-tip">Variables: <span class="variable-tag">${variables}</span></div>
 
             <div class="card-actions">
-                <button onclick="saveConfig()" class="btn-primary" style="width: auto; padding: 0.5rem 2rem;">
-                    <i class="fas fa-save"></i> Save Configuration
+                <button onclick="saveAutomation('${config.template_slug}')" class="btn-primary" style="width: auto; padding: 0.5rem 2rem;">
+                    <i class="fas fa-save"></i> Save ${config.template_name}
                 </button>
             </div>
         </div>
     `;
+            container.insertAdjacentHTML('beforeend', cardHtml);
         }
 
-        async function saveConfig() {
-            const is_active = document.getElementById('toggleActive').checked;
-            const base_url = document.getElementById('baseUrl').value;
-            const target_page = document.getElementById('targetPage').value;
-            const message_content = document.getElementById('messageContent').value; // Corrected name
+        async function saveAutomation(slug) {
+            const is_active = document.getElementById(`toggle-${slug}`).checked;
+            const base_url = document.getElementById(`url-${slug}`).value;
+            const target_page = document.getElementById(`page-${slug}`).value;
+            const message_content = document.getElementById(`msg-${slug}`).value;
 
             const { error } = await supabase
                 .from('sms_templates')
-                .update({
-                    is_active,
-                    base_url,
-                    target_page,
-                    message_content // Corrected name
-                })
-                .eq('template_slug', SLUG); // Corrected name
+                .update({ is_active, base_url, target_page, message_content })
+                .eq('template_slug', slug);
 
             if (error) {
-                alert("Update failed: " + error.message);
+                alert("Error: " + error.message);
             } else {
-                alert("Configuration saved successfully!");
-                loadAutomationConfig();
+                alert(`${slug} updated successfully!`);
+                loadAutomations();
             }
         }
 
-        loadAutomationConfig();
+        // Initial Load
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSessionAndRenderLayout();
+            loadAutomations();
+        });
     </script>
 </body>
 
