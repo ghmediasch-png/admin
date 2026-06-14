@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Broadcast Center | GH Schools</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase JS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <header>
+        <h1>Broadcast to New Students</h1>
+        <p>Event-Driven SMS Management Portal</p>
+    </header>
+
+    <main class="dashboard">
+        <!-- CARD 1: BULK BROADCAST -->
+        <section class="card" id="bulk-card">
+            <div class="card-header">
+                <h2>Card 1: Bulk Broadcast</h2>
+                <span class="badge" id="broadcast-status">Idle</span>
+            </div>
+            <p class="description">Sends credentials to all students who have a portal username and password generated.</p>
+            
+            <div class="template-preview">
+                <strong>Message Preview:</strong>
+                <p id="preview-text">Hello {{first_name}}, your admission form is ready. Username: {{username}}, Password: {{password}}. Access here: http://ghschools.edu.gh/admissionforms.html</p>
+            </div>
+
+            <!-- Progress Indicator (Hidden by default) -->
+            <div id="progress-container" style="display: none; margin-top: 20px;">
+                <div class="progress-text">
+                    <span>Processing...</span>
+                    <span><span id="current-index">0</span> / <span id="total-records">0</span></span>
+                </div>
+                <div class="progress-bg">
+                    <div id="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="btn-broadcast" class="btn-primary">Start Bulk Broadcast</button>
+                <button id="btn-stop" class="btn-danger" style="display: none; margin-top: 10px;">Stop Broadcast</button>
+            </div>
+        </section>
+
+        <!-- CARD 2: TARGETED SEND -->
+        <section class="card" id="single-card">
+            <div class="card-header">
+                <h2>Card 2: Targeted Send</h2>
+            </div>
+            <p class="description">Lookup a specific student and send credentials to a custom number.</p>
+            
+            <div class="form-group">
+                <label for="student-id">Student ID</label>
+                <input type="text" id="student-id" placeholder="e.g. GHS001">
+            </div>
+
+            <div class="form-group">
+                <label for="custom-phone">Override Phone Number</label>
+                <input type="tel" id="custom-phone" placeholder="e.g. 054XXXXXXX">
+            </div>
+
+            <div class="actions">
+                <button id="btn-single-send" class="btn-secondary">Send to This Number</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- LOG CONSOLE -->
+    <footer class="console-area">
+        <h3>Execution Logs</h3>
+        <div id="log-output" class="log-container">
+            <div class="log-entry system">System initialized. Waiting for action...</div>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
