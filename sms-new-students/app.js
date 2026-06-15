@@ -111,7 +111,7 @@ function normalizePhone(phone) {
 }
 
 function parseTemplate(template, student) {
-    const staticUrl = "http://ghschools.edu.gh/admissionforms.html";
+    const staticUrl = "http://ghschools.edu.gh/newstudent.html";
     return template
         .replace(/{{first_name}}/g, student.first_name || 'Student')
         .replace(/{{username}}/g, student.portal_username || '')
