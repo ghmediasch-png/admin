@@ -55,10 +55,17 @@
             const container = document.getElementById('automationContainer');
             const cardId = `card-${config.template_slug}`;
 
-            // Dynamic variable tips based on slug
-            const variables = config.template_slug === 'adm_form_purchase'
-                ? '{{first_name}}, {{username}}, {{password}}, {{url}}'
-                : '{{first_name}}, {{username}}, {{password}}, {{url}}';
+            // 1. Identify if this is a General Payment card
+            const isGeneralPayment = config.template_slug === 'adm_general_payment';
+
+            // 2. Set the display style for URL fields (hide if General Payment)
+            const urlFieldsStyle = isGeneralPayment ? 'display:none;' : 'display:block;';
+
+            // 3. Define variable tooltips based on the specific template
+            let variables = '{{first_name}}, {{username}}, {{password}}, {{url}}';
+            if (isGeneralPayment) {
+                variables = '{{student_name}}, {{amount}}, {{ref}}';
+            }
 
             const cardHtml = `
         <div class="template-card" id="${cardId}" style="margin-bottom: 2rem; border-left: 4px solid var(--primary);">
@@ -73,14 +80,17 @@
                 </label>
             </div>
 
-            <div class="form-group">
-                <label>Base URL</label>
-                <input type="text" id="url-${config.template_slug}" value="${config.base_url || ''}">
-            </div>
+            <!-- This wrapper hides Base URL and Target Page for General Payments -->
+            <div style="${urlFieldsStyle}">
+                <div class="form-group">
+                    <label>Base URL</label>
+                    <input type="text" id="url-${config.template_slug}" value="${config.base_url || ''}">
+                </div>
 
-            <div class="form-group">
-                <label>Target Page</label>
-                <input type="text" id="page-${config.template_slug}" value="${config.target_page || ''}">
+                <div class="form-group">
+                    <label>Target Page</label>
+                    <input type="text" id="page-${config.template_slug}" value="${config.target_page || ''}">
+                </div>
             </div>
 
             <div class="form-group">
