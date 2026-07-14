@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,23 +9,28 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- CSV Parser Library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
+
     <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="students.css">
 </head>
+
 <body>
     <div class="admin-layout">
         <!-- Sidebar injected by global.js -->
-        
+
         <div class="main-content">
             <div class="page-content">
-                
+
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
                     <div>
                         <h1>Student Database</h1>
                         <p style="color:#64748b;">Manage master records for the API.</p>
                     </div>
                     <div style="display:flex; gap:10px;">
+                        <a href="manage-l100.html" class="btn-outline"
+                            style="text-decoration:none; border-color:#2563eb; color:#2563eb; display:flex; align-items:center; gap:8px;">
+                            <i class="fas fa-graduation-cap"></i> Manage L100 & Promotion
+                        </a>
                         <button onclick="openBulkModal()" class="btn-retry">
                             <i class="fas fa-file-csv"></i> Bulk Upload
                         </button>
@@ -50,7 +56,9 @@
                             </tr>
                         </thead>
                         <tbody id="studentBody">
-                            <tr><td colspan="5" style="text-align:center;">Loading...</td></tr>
+                            <tr>
+                                <td colspan="5" style="text-align:center;">Loading...</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -66,12 +74,13 @@
         <div class="auth-card modal-card-default" style="max-width:700px;">
             <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
                 <h2 id="modalTitle" style="margin:0;">Add Student</h2>
-                <button onclick="closeModals()" style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+                <button onclick="closeModals()"
+                    style="border:none; background:none; font-size:1.5rem; cursor:pointer;">&times;</button>
             </div>
-            
+
             <form id="studentForm">
                 <input type="hidden" id="recordId"> <!-- For Updates -->
-                
+
                 <!-- Compulsory Fields -->
                 <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px; margin-bottom:15px;">
                     <div class="form-group">
@@ -165,4 +174,5 @@
     <script src="students.js"></script>
     <script>checkSessionAndRenderLayout();</script>
 </body>
+
 </html>

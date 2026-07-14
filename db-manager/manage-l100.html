@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Cycle Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="students.css">
+    <style>
+        .tab-container { display: flex; gap: 20px; border-bottom: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .tab-btn { padding: 10px 20px; cursor: pointer; border: none; background: none; color: #64748b; font-weight: 600; border-bottom: 2px solid transparent; transition: 0.2s; }
+        .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .info-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .warning-box { background: #fff7ed; border: 1px solid #fdba74; color: #9a3412; padding: 15px; border-radius: 6px; font-size: 0.9rem; margin-top: 10px; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
+        .stat-card { background: white; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; }
+        .stat-card label { display: block; font-size: 0.75rem; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .stat-card span { font-size: 1.25rem; font-weight: bold; color: #1e293b; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <div class="main-content">
+            <div class="page-content">
+                <div style="margin-bottom:20px;">
+                    <a href="students.html" style="color:#2563eb; text-decoration:none; font-size:0.9rem;">
+                        <i class="fas fa-arrow-left"></i> Back to Student Database
+                    </a>
+                    <h1 style="margin-top:10px;">Academic Cycle Management</h1>
+                </div>
+
+                <div class="tab-container">
+                    <button class="tab-btn active" id="tab-onboarding" onclick="switchTab('onboarding')">1. Pending Onboarding</button>
+                    <button class="tab-btn" id="tab-promotion" onclick="switchTab('promotion')">2. Academic Promotion</button>
+                </div>
+
+                <!-- TAB 1: ONBOARDING -->
+                <div id="onboarding" class="tab-content active">
+                    <div class="info-card">
+                        <h3>New Admissions Onboarding</h3>
+                        <p style="font-size:0.9rem; color:#64748b;">Set the Admission Session for this batch and sync them to the Master Database.</p>
+                        
+                        <div style="display:flex; gap:15px; align-items:flex-end; margin-top:15px; flex-wrap: wrap;">
+                            <div class="form-group" style="margin:0;">
+                                <label>Set Admission Month</label>
+                                <select id="admMonth" class="date-input" style="width:150px;"></select>
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label>Set Admission Year</label>
+                                <select id="admYear" class="date-input" style="width:120px;"></select>
+                            </div>
+                            <button onclick="runOnboardingSync()" id="btnOnboard" class="btn-primary" style="width:auto;">
+                                <i class="fas fa-sync"></i> Sync Selected students
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th style="width:40px;"><input type="checkbox" onclick="toggleSelectAll('onboardList', this.checked)"></th>
+                                    <th>Student ID</th>
+                                    <th>Name</th>
+                                    <th>Program</th>
+                                    <th>Pathway</th>
+                                </tr>
+                            </thead>
+                            <tbody id="onboardList">
+                                <tr><td colspan="5" style="text-align:center; padding:40px;">Loading differences...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 2: PROMOTION -->
+                <div id="promotion" class="tab-content">
+                    <div class="info-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <h3>Global Level Promotion</h3>
+                                <p id="lastTriggeredLabel" style="font-size:0.85rem; font-weight:600; color:#2563eb; margin-bottom:10px;">
+                                    Fetching last session...
+                                </p>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap:15px; align-items:flex-end; flex-wrap: wrap;">
+                            <div class="form-group" style="margin:0;">
+                                <label>Next Academic Month</label>
+                                <select id="promoMonth" class="date-input" style="width:150px;"></select>
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label>Next Academic Year</label>
+                                <select id="promoYear" class="date-input" style="width:120px;"></select>
+                            </div>
+                            <button onclick="runGlobalPromotion()" id="btnPromote" class="btn-primary" style="width:auto; background:#dc2626; border-color:#dc2626;">
+                                <i class="fas fa-rocket"></i> Trigger Mass Promotion
+                            </button>
+                        </div>
+
+                        <div class="warning-box">
+                            <strong><i class="fas fa-exclamation-triangle"></i> ATTENTION:</strong> 
+                            This affects all active rows in the master table. Students marked as <strong>Graduated, Paused, or Suspended</strong> will be skipped.
+                        </div>
+
+                        <div id="promoPreviewStats" class="stat-grid"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../global.js"></script>
+    <script src="manage-l100.js"></script>
+    <script>checkSessionAndRenderLayout();</script>
+</body>
+</html>
