@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Re-Orientation SMS Broadcast | GH Schools</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #4f46e5;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --console-bg: #0f172a;
+            --console-text: #38bdf8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
+        }
+
+        header { text-align: center; margin-bottom: 40px; }
+        header h1 { margin-bottom: 5px; }
+        header p { color: #64748b; margin-top: 0; }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .description { font-size: 0.9rem; color: #64748b; margin-bottom: 20px; }
+
+        .badge {
+            background: #dcfce7;
+            color: #166534;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            border-radius: 99px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        #broadcast-status.active { background: #fef9c3; color: #854d0e; }
+
+        /* Stats strip */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+
+        .stat-value { font-size: 1.6rem; font-weight: 800; display: block; line-height: 1.2; }
+        .stat-label {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+        .stat.info .stat-value { color: var(--primary); }
+        .stat.success .stat-value { color: #16a34a; }
+        .stat.danger .stat-value { color: #dc2626; }
+
+        /* Template editor */
+        .template-editor {
+            width: 100%;
+            min-height: 110px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 0.9rem;
+            font-family: inherit;
+            resize: vertical;
+            background: #fff;
+        }
+
+        .template-editor:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .template-preview {
+            background: #f1f5f9;
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            margin: 10px 0 20px 0;
+            font-size: 0.85rem;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .template-preview strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--primary);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+
+        .preview-box {
+            background: #ffffff;
+            border: 1px dashed var(--border);
+            border-radius: 6px;
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            color: #475569;
+            margin-top: 8px;
+            min-height: 36px;
+        }
+
+        .variables-tip { font-size: 0.75rem; color: #64748b; margin-bottom: 20px; }
+        .variable-tag {
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+        }
+
+        /* Table */
+        .table-tools {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .table-tools input[type="text"] {
+            width: 280px;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .table-tools input[type="text"]:focus {
+            outline: 2px solid var(--primary);
+            border-color: transparent;
+        }
+
+        .row-count { font-size: 0.8rem; color: #64748b; margin-left: auto; }
+
+        .link-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0;
+            margin: 0;
+            width: auto;
+            text-decoration: underline;
+        }
+
+        .table-wrap {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: auto;
+            max-height: 320px;
+            margin-bottom: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: #f1f5f9;
+            text-align: left;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+            z-index: 1;
+        }
+
+        tbody td { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+        tbody tr:hover { background: #f8fafc; }
+        tbody tr.row-no-phone td { color: #94a3b8; }
+
+        .muted { color: #94a3b8; font-style: italic; }
+
+        /* Progress */
+        #progress-container { margin-top: 20px; }
+
+        .progress-bg {
+            background: #e2e8f0;
+            height: 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            background: var(--primary);
+            width: 0%;
+            height: 100%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            color: #475569;
+        }
+
+        .actions { margin-top: auto; }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+
+        button:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+
+        /* Card 2 filter boxes */
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .filter-box {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            background: #f8fafc;
+        }
+
+        .filter-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .filter-title {
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #334155;
+            margin-right: auto;
+        }
+
+        .filter-list {
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: #fff;
+        }
+
+        .filter-opt {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .filter-opt:last-child { border-bottom: none; }
+        .filter-opt:hover { background: #f1f5f9; }
+        .filter-opt .count { margin-left: auto; color: #64748b; font-size: 0.78rem; }
+
+        .matched-note {
+            font-size: 0.85rem;
+            font-weight: 600;
+            padding: 10px 12px;
+            background: #eff6ff;
+            border-radius: 8px;
+            color: #1d4ed8;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 720px) {
+            .filter-row { grid-template-columns: 1fr; }
+        }
+
+        /* Log console */
+        .console-area {
+            max-width: 1200px;
+            margin: 40px auto;
+            background: var(--console-bg);
+            color: var(--console-text);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .console-area h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 10px;
+        }
+
+        .log-container {
+            height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-entry { margin-bottom: 4px; border-bottom: 1px solid #1e293b; padding-bottom: 2px; }
+        .log-entry.system { color: #94a3b8; }
+        .log-entry.success { color: #4ade80; }
+        .log-entry.error { color: #fb7185; }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .pulse { animation: pulse 1.5s infinite; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Re-Orientation SMS Broadcast</h1>
+        <p>student_master_db &bull; Card 1 of 2</p>
+    </header>
+
+    <main class="dashboard">
+        <!-- CARD 1: BULK BROADCAST -->
+        <section class="card" id="bulk-card">
+            <div class="card-header">
+                <h2>Card 1: Broadcast to Student Master DB</h2>
+                <span class="badge" id="broadcast-status">Idle</span>
+            </div>
+            <p class="description">Select one row or the entire table, then send the re-orientation reminder SMS to the selected students.</p>
+
+            <!-- Live counters -->
+            <div class="stats">
+                <div class="stat info">
+                    <span class="stat-value" id="stat-total">&ndash;</span>
+                    <span class="stat-label">Total Rows</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="stat-selected">0</span>
+                    <span class="stat-label">Selected</span>
+                </div>
+                <div class="stat success">
+                    <span class="stat-value" id="stat-sent">0</span>
+                    <span class="stat-label">Sent</span>
+                </div>
+                <div class="stat danger">
+                    <span class="stat-value" id="stat-failed">0</span>
+                    <span class="stat-label">Failed</span>
+                </div>
+            </div>
+
+            <!-- Editable template -->
+            <div class="template-preview">
+                <strong>Editable SMS Template</strong>
+                <textarea id="template-input" class="template-editor">Hello {{first_name}} ({{student_id}}), please be reminded of the re-orientation dates: Fresher 10th to 14th August, continuing students 11th &amp; 12th.</textarea>
+                <div class="variables-tip">Variables: <span class="variable-tag">{{first_name}}</span> <span class="variable-tag">{{student_id}}</span></div>
+                <strong style="display:block; margin-bottom:8px; color:var(--primary); text-transform:uppercase; font-size:0.75rem;">Live Preview</strong>
+                <div id="preview-text" class="preview-box">Loading students...</div>
+            </div>
+
+            <!-- Recipients table -->
+            <div class="table-tools">
+                <input type="text" id="filter-input" placeholder="Search student ID or first name...">
+                <button type="button" id="btn-clear-sel" class="link-btn">Clear</button>
+                <span class="row-count"><span id="row-count">0</span> visible</span>
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 34px;"><input type="checkbox" id="select-all" title="Select all visible"></th>
+                            <th>Student ID</th>
+                            <th>First Name</th>
+                            <th>Phone</th>
+                        </tr>
+                    </thead>
+                    <tbody id="students-tbody"></tbody>
+                </table>
+            </div>
+
+            <!-- Progress (hidden by default) -->
+            <div id="progress-container" style="display: none;">
+                <div class="progress-text">
+                    <span>Processing...</span>
+                    <span><span id="current-index">0</span> / <span id="total-records">0</span></span>
+                </div>
+                <div class="progress-bg">
+                    <div id="progress-fill"></div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="btn-send" class="btn-primary">Send SMS to Selected</button>
+                <button id="btn-stop" class="btn-danger" style="display: none;">Stop Broadcast</button>
+            </div>
+        </section>
+
+        <!-- CARD 2: FILTERED BROADCAST -->
+        <section class="card" id="filter-card">
+            <div class="card-header">
+                <h2>Card 2: Filtered Broadcast</h2>
+                <span class="badge" id="status2">Idle</span>
+            </div>
+            <p class="description">Narrow recipients by School and Level, then send the orientation reminder to everyone who matches.</p>
+
+            <div class="stats">
+                <div class="stat info">
+                    <span class="stat-value" id="stat2-matched">0</span>
+                    <span class="stat-label">Matched</span>
+                </div>
+                <div class="stat success">
+                    <span class="stat-value" id="stat2-sent">0</span>
+                    <span class="stat-label">Sent</span>
+                </div>
+                <div class="stat danger">
+                    <span class="stat-value" id="stat2-failed">0</span>
+                    <span class="stat-label">Failed</span>
+                </div>
+            </div>
+
+            <div class="template-preview">
+                <strong>Editable SMS Template</strong>
+                <textarea id="template-input2" class="template-editor">Hello {{first_name}} ({{student_id}}),
+Kindly be reminded that the orientation for freshers is scheduled to take place from Monday, 10th August to Friday, 14th August 2026, at 9:30am at the GH Media Mega Studio.
+Thank you.</textarea>
+                <div class="variables-tip">Variables: <span class="variable-tag">{{first_name}}</span> <span class="variable-tag">{{student_id}}</span></div>
+                <strong style="display:block; margin-bottom:8px; color:var(--primary); text-transform:uppercase; font-size:0.75rem;">Live Preview</strong>
+                <div id="preview-text2" class="preview-box">Loading...</div>
+            </div>
+
+            <div class="filter-row">
+                <!-- FILTER 1: SCHOOL -->
+                <div class="filter-box">
+                    <div class="filter-header">
+                        <span class="filter-title">School</span>
+                        <button type="button" class="link-btn" id="school-all">All</button>
+                        <button type="button" class="link-btn" id="school-none">None</button>
+                    </div>
+                    <div class="filter-list" id="school-list"></div>
+                </div>
+                <!-- FILTER 2: LEVEL -->
+                <div class="filter-box">
+                    <div class="filter-header">
+                        <span class="filter-title">Level</span>
+                        <button type="button" class="link-btn" id="level-all">All</button>
+                        <button type="button" class="link-btn" id="level-none">None</button>
+                    </div>
+                    <div class="filter-list" id="level-list"></div>
+                </div>
+            </div>
+
+            <div class="matched-note" id="matched-note">Select filters to see how many students match.</div>
+
+            <div id="progress-container2" style="display: none;">
+                <div class="progress-text">
+                    <span>Processing...</span>
+                    <span><span id="current-index2">0</span> / <span id="total-records2">0</span></span>
+                </div>
+                <div class="progress-bg">
+                    <div id="progress-fill2"></div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button id="btn-send2" class="btn-primary" disabled>Send SMS to Matched</button>
+                <button id="btn-stop2" class="btn-danger" style="display: none;">Stop Broadcast</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- LOG CONSOLE -->
+    <footer class="console-area">
+        <h3>Execution Logs</h3>
+        <div id="log-output" class="log-container">
+            <div class="log-entry system">System initialized. Waiting for action...</div>
+        </div>
+    </footer>
+
+    <script>
+        // =====================================================
+        // Re-Orientation SMS Broadcast - Core Logic
+        // Mirrors the sms-new-students/app.js flow (adm-login-trigger
+        // edge function + Supabase), but targets student_master_db.
+        // =====================================================
+
+        // 1. CONFIGURATION & INITIALIZATION
+        const SUPABASE_URL = 'https://fyriapqeztevzkcaaiqw.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5cmlhcHFlenRldnprY2FhaXF3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjM5OTgyNTcsImV4cCI6MjA3OTU3NDI1N30.Re3EZ2VXE6Z7qWhVlxV6yqqIWB8wj1b1wURNLZXpddY';
+        const EDGE_FUNCTION_URL = 'https://fyriapqeztevzkcaaiqw.supabase.co/functions/v1/reorientation-sms';
+
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const state = {
+            students: [],
+            selected: new Set(),
+            isRunning: false,
+            schools: [],
+            levels: [],
+            schoolSel: new Set(),
+            levelSel: new Set()
+        };
+
+        const ui = {
+            statusBadge: document.getElementById('broadcast-status'),
+            statTotal: document.getElementById('stat-total'),
+            statSelected: document.getElementById('stat-selected'),
+            statSent: document.getElementById('stat-sent'),
+            statFailed: document.getElementById('stat-failed'),
+            templateInput: document.getElementById('template-input'),
+            previewText: document.getElementById('preview-text'),
+            filterInput: document.getElementById('filter-input'),
+            btnClearSel: document.getElementById('btn-clear-sel'),
+            selectAll: document.getElementById('select-all'),
+            tbody: document.getElementById('students-tbody'),
+            rowCount: document.getElementById('row-count'),
+            progressContainer: document.getElementById('progress-container'),
+            progressFill: document.getElementById('progress-fill'),
+            currentIndex: document.getElementById('current-index'),
+            totalRecords: document.getElementById('total-records'),
+            btnSend: document.getElementById('btn-send'),
+            btnStop: document.getElementById('btn-stop'),
+            logOutput: document.getElementById('log-output')
+        };
+
+        const ui2 = {
+            statusBadge: document.getElementById('status2'),
+            statMatched: document.getElementById('stat2-matched'),
+            statSent: document.getElementById('stat2-sent'),
+            statFailed: document.getElementById('stat2-failed'),
+            template: document.getElementById('template-input2'),
+            preview: document.getElementById('preview-text2'),
+            schoolList: document.getElementById('school-list'),
+            levelList: document.getElementById('level-list'),
+            btnSchoolAll: document.getElementById('school-all'),
+            btnSchoolNone: document.getElementById('school-none'),
+            btnLevelAll: document.getElementById('level-all'),
+            btnLevelNone: document.getElementById('level-none'),
+            matchedNote: document.getElementById('matched-note'),
+            progress: document.getElementById('progress-container2'),
+            progressFill: document.getElementById('progress-fill2'),
+            current: document.getElementById('current-index2'),
+            total: document.getElementById('total-records2'),
+            btnSend2: document.getElementById('btn-send2'),
+            btnStop2: document.getElementById('btn-stop2')
+        };
+
+        const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+        // 2. UI HELPERS
+        function addLog(message, type = 'system') {
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            entry.innerText = `[${new Date().toLocaleTimeString()}] ${message}`;
+            ui.logOutput.prepend(entry);
+        }
+
+        function setUiState(isRunning) {
+            if (isRunning) {
+                ui.btnSend.disabled = true;
+                ui.btnStop.style.display = "block";
+                ui.progressContainer.style.display = "block";
+                ui.statusBadge.innerText = "Running";
+                ui.statusBadge.classList.add('active', 'pulse');
+            } else {
+                ui.btnSend.disabled = false;
+                ui.btnStop.style.display = "none";
+                ui.progressContainer.style.display = "none";
+                ui.statusBadge.innerText = "Idle";
+                ui.statusBadge.classList.remove('active', 'pulse');
+            }
+        }
+
+        function updateProgress(current, total) {
+            ui.currentIndex.innerText = current;
+            ui.progressFill.style.width = `${(current / total) * 100}%`;
+        }
+
+        function setCount(el, value) {
+            el.innerText = String(value);
+        }
+
+        // 3. DATA FETCHING
+        async function loadRowCount() {
+            const { count, error } = await _supabase
+                .from('student_master_db')
+                .select('*', { count: 'exact', head: true });
+
+            if (error) {
+                addLog(`Row count failed: ${error.message}`, 'error');
+                ui.statTotal.innerText = 'ERR';
+                return null;
+            }
+            setCount(ui.statTotal, count ?? '?');
+            addLog(`student_master_db has ${count} row(s).`, 'success');
+            return count;
+        }
+
+        async function loadStudents() {
+            addLog('Loading student_master_db rows...', 'system');
+            // Supabase caps a single query at 1000 rows, so page through
+            // the whole table with range() to pick up all rows.
+            const PAGE_SIZE = 1000;
+            const all = [];
+            let from = 0;
+            let more = true;
+
+            while (more) {
+                const { data, error } = await _supabase
+                    .from('student_master_db')
+                    .select('id, student_id, first_name, phone_number_1, phone_number_2, whatsapp, school, level')
+                    .order('student_id', { ascending: true })
+                    .range(from, from + PAGE_SIZE - 1);
+
+                if (error) {
+                    addLog(`Load failed: ${error.message}`, 'error');
+                    ui.previewText.innerText = 'Failed to load rows.';
+                    return;
+                }
+
+                all.push(...(data || []));
+                more = data && data.length === PAGE_SIZE;
+                from += PAGE_SIZE;
+                addLog(`Fetched ${all.length} row(s) so far...`, 'system');
+            }
+
+            state.students = all;
+            addLog(`Loaded ${state.students.length} student(s).`, 'success');
+            renderTable();
+            updatePreview();
+            initFilters();
+        }
+
+        // 4. TABLE RENDERING & SELECTION
+        function escapeHtml(value) {
+            return String(value ?? '').replace(/[&<>"']/g, (c) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        function visibleRows() {
+            const term = ui.filterInput.value.trim().toLowerCase();
+            if (!term) return state.students;
+            return state.students.filter((s) =>
+                (s.student_id || '').toLowerCase().includes(term) ||
+                (s.first_name || '').toLowerCase().includes(term)
+            );
+        }
+
+        function renderTable() {
+            const rows = visibleRows();
+            ui.tbody.innerHTML = rows.map((s) => {
+                const phone = s.phone_number_1 || s.phone_number_2 || s.whatsapp || '';
+                const checked = state.selected.has(s.id) ? 'checked' : '';
+                const cls = phone ? '' : 'row-no-phone';
+                return `
+                    <tr data-id="${escapeHtml(s.id)}" class="${cls}">
+                        <td><input type="checkbox" ${checked}></td>
+                        <td>${escapeHtml(s.student_id)}</td>
+                        <td>${escapeHtml(s.first_name)}</td>
+                        <td>${phone ? escapeHtml(phone) : '<span class="muted">no phone</span>'}</td>
+                    </tr>`;
+            }).join('');
+            ui.rowCount.innerText = String(rows.length);
+            syncHeaderCheckbox();
+            updateSelectedCount();
+        }
+
+        function syncHeaderCheckbox() {
+            const ids = Array.from(ui.tbody.querySelectorAll('tr')).map((tr) => tr.dataset.id);
+            if (!ids.length) {
+                ui.selectAll.checked = false;
+                ui.selectAll.indeterminate = false;
+                return;
+            }
+            const all = ids.every((id) => state.selected.has(id));
+            const some = ids.some((id) => state.selected.has(id));
+            ui.selectAll.checked = all;
+            ui.selectAll.indeterminate = !all && some;
+        }
+
+        function updateSelectedCount() {
+            setCount(ui.statSelected, state.selected.size);
+            ui.btnSend.disabled = state.isRunning || state.selected.size === 0;
+        }
+
+        function updatePreview() {
+            const template = ui.templateInput.value;
+            const s = state.students.find((x) => state.selected.has(x.id)) || state.students[0];
+            ui.previewText.innerText = s ? parseTemplate(template, s) : '';
+        }
+
+        // 5. LOGIC ENGINE
+        function resolvePhone(s) {
+            const raw = s.phone_number_1 || s.phone_number_2 || s.whatsapp;
+            if (!raw) return null;
+            const cleaned = String(raw).replace(/\D/g, '');
+            if (!cleaned) return null;
+            return cleaned.startsWith('0') ? '233' + cleaned.substring(1) : cleaned;
+        }
+
+        function parseTemplate(template, student) {
+            return template
+                .replace(/{{first_name}}/g, student.first_name || 'Student')
+                .replace(/{{student_id}}/g, student.student_id || '');
+        }
+
+        // Sends the exact, client-rendered message to the dedicated
+        // reorientation-sms edge function, which relays it verbatim to Arkesel.
+        // (The old adm-login-trigger path built its own credentials message
+        // and ignored manual_msg, so it could not send this template.)
+        async function triggerSms(phone, message) {
+            try {
+                const response = await fetch(EDGE_FUNCTION_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ phone, message })
+                });
+
+                let bodyText = '';
+                try { bodyText = await response.text(); } catch (_) { /* ignore */ }
+
+                if (!response.ok) {
+                    addLog(`Edge fn HTTP ${response.status}: ${bodyText.slice(0, 300)}`, 'error');
+                }
+
+                return { ok: response.ok, body: bodyText };
+            } catch (err) {
+                addLog(`Edge fn threw: ${err.message}`, 'error');
+                return { ok: false, body: '' };
+            }
+        }
+
+        // 6. FILTER LOGIC (Card 2)
+        function initFilters() {
+            state.schools = [...new Set(state.students.map(s => s.school).filter(v => v !== null && v !== undefined && String(v).trim() !== ''))]
+                .sort((a, b) => String(a).localeCompare(String(b)));
+            state.levels = [...new Set(state.students.map(s => s.level).filter(v => v !== null && v !== undefined && String(v).trim() !== ''))]
+                .sort((a, b) => String(a).localeCompare(String(b)));
+
+            // Default: select everything in both filters.
+            // NOTE: mutate in place - the change handlers hold references to
+            // these exact Set objects, so never reassign them.
+            state.schoolSel.clear();
+            state.schools.forEach((v) => state.schoolSel.add(v));
+            state.levelSel.clear();
+            state.levels.forEach((v) => state.levelSel.add(v));
+
+            renderFilters();
+            updateMatched();
+        }
+
+        function countBy(key, value) {
+            return state.students.filter((s) => s[key] === value).length;
+        }
+
+        function renderFilterList(container, values, selectedSet, key) {
+            if (!values.length) {
+                container.innerHTML = '<div class="filter-opt muted">No values found.</div>';
+                return;
+            }
+            container.innerHTML = values.map((v) => `
+                <label class="filter-opt">
+                    <input type="checkbox" data-v="${escapeHtml(v)}" ${selectedSet.has(v) ? 'checked' : ''}>
+                    <span>${escapeHtml(v)}</span>
+                    <span class="count">${countBy(key, v)}</span>
+                </label>`).join('');
+        }
+
+        function renderFilters() {
+            renderFilterList(ui2.schoolList, state.schools, state.schoolSel, 'school');
+            renderFilterList(ui2.levelList, state.levels, state.levelSel, 'level');
+        }
+
+        // Matching rule per filter:
+        //   - no values exist at all -> no constraint (everyone passes)
+        //   - ALL values checked     -> no constraint (everyone passes, incl. blanks)
+        //   - NOTHING checked        -> nobody passes (zero recipients)
+        //   - partial selection      -> only students with a checked value pass
+        function schoolMatches(s) {
+            if (!state.schools.length) return true;
+            if (state.schoolSel.size === state.schools.length) return true;
+            if (state.schoolSel.size === 0) return false;
+            return state.schoolSel.has(s.school);
+        }
+
+        function levelMatches(s) {
+            if (!state.levels.length) return true;
+            if (state.levelSel.size === state.levels.length) return true;
+            if (state.levelSel.size === 0) return false;
+            return state.levelSel.has(s.level);
+        }
+
+        function matchedStudents() {
+            return state.students.filter((s) => schoolMatches(s) && levelMatches(s));
+        }
+
+        function updateMatched() {
+            const m = matchedStudents();
+            ui2.statMatched.innerText = m.length;
+            const schoolEmpty = state.schools.length > 0 && state.schoolSel.size === 0;
+            const levelEmpty = state.levels.length > 0 && state.levelSel.size === 0;
+            let note = `${m.length} student(s) match the selected School + Level filters.`;
+            if (schoolEmpty || levelEmpty) note += ' Check at least one value in each filter.';
+            ui2.matchedNote.innerText = note;
+            ui2.preview.innerText = m[0] ? parseTemplate(ui2.template.value, m[0]) : '';
+            ui2.btnSend2.disabled = state.isRunning || m.length === 0;
+        }
+
+        // 7. SHARED BROADCAST WORKFLOW (used by both cards)
+        async function broadcast(targets, c) {
+            if (state.isRunning) return addLog('A broadcast is already running.', 'error');
+            const template = c.template.value.trim();
+            if (!template) return addLog('Template is empty.', 'error');
+            if (!targets.length) return addLog('No matching recipients.', 'error');
+
+            let sent = 0;
+            let failed = 0;
+            let processed = 0;
+
+            state.isRunning = true;
+            c.run();
+            c.statSent.innerText = '0';
+            c.statFailed.innerText = '0';
+            c.total.innerText = targets.length;
+            addLog(`Broadcasting to ${targets.length} recipient(s).`, 'system');
+            addLog(`Sample message: ${parseTemplate(template, targets[0])}`, 'system');
+
+            for (let i = 0; i < targets.length; i++) {
+                if (!state.isRunning) break;
+                processed = i + 1;
+                c.current.innerText = processed;
+                c.fill.style.width = `${(processed / targets.length) * 100}%`;
+
+                const s = targets[i];
+                const phone = resolvePhone(s);
+
+                if (!phone) {
+                    failed++;
+                    c.statFailed.innerText = failed;
+                    addLog(`Skip (no phone): ${s.student_id || s.id}`, 'error');
+                } else {
+                    const msg = parseTemplate(template, s);
+                    const result = await triggerSms(phone, msg);
+                    if (result.ok) {
+                        sent++;
+                        c.statSent.innerText = sent;
+                        addLog(`Sent: ${s.student_id || s.id} -> ${phone}`, 'success');
+                    } else {
+                        failed++;
+                        c.statFailed.innerText = failed;
+                        addLog(`Failed: ${s.student_id || s.id} -> ${phone}`, 'error');
+                    }
+                }
+                await sleep(250);
+            }
+
+            const stopped = !state.isRunning;
+            state.isRunning = false;
+            c.idle();
+            addLog(
+                stopped
+                    ? `Stopped after ${processed}/${targets.length}. Sent: ${sent}, Failed: ${failed}.`
+                    : `Done. Sent: ${sent}, Failed: ${failed}.`,
+                stopped ? 'error' : 'system'
+            );
+        }
+
+        function configCard1() {
+            return {
+                template: ui.templateInput,
+                statSent: ui.statSent,
+                statFailed: ui.statFailed,
+                total: ui.totalRecords,
+                current: ui.currentIndex,
+                fill: ui.progressFill,
+                run: () => setUiState(true),
+                idle: () => {
+                    setUiState(false);
+                    ui.btnSend.disabled = state.selected.size === 0;
+                }
+            };
+        }
+
+        function configCard2() {
+            return {
+                template: ui2.template,
+                statSent: ui2.statSent,
+                statFailed: ui2.statFailed,
+                total: ui2.total,
+                current: ui2.current,
+                fill: ui2.progressFill,
+                run: () => {
+                    ui2.btnSend2.disabled = true;
+                    ui2.btnStop2.style.display = 'block';
+                    ui2.progress.style.display = 'block';
+                    ui2.statusBadge.innerText = 'Running';
+                    ui2.statusBadge.classList.add('active', 'pulse');
+                },
+                idle: () => {
+                    ui2.btnStop2.style.display = 'none';
+                    ui2.progress.style.display = 'none';
+                    ui2.statusBadge.innerText = 'Idle';
+                    ui2.statusBadge.classList.remove('active', 'pulse');
+                    ui2.btnSend2.disabled = matchedStudents().length === 0;
+                }
+            };
+        }
+
+        // 8. LISTENERS
+        ui.btnSend.onclick = () => {
+            const targets = state.students.filter((s) => state.selected.has(s.id));
+            if (!targets.length) return addLog('No rows selected.', 'error');
+            if (confirm(`Send SMS to ${targets.length} selected row(s)?`)) broadcast(targets, configCard1());
+        };
+        ui.btnStop.onclick = () => { state.isRunning = false; addLog('Stopping...', 'error'); };
+
+        ui2.btnSend2.onclick = () => {
+            const targets = matchedStudents();
+            if (!targets.length) return addLog('No matching recipients.', 'error');
+            if (confirm(`Send SMS to ${targets.length} matched student(s)?`)) broadcast(targets, configCard2());
+        };
+        ui2.btnStop2.onclick = () => { state.isRunning = false; addLog('Stopping...', 'error'); };
+
+        ui.templateInput.addEventListener('input', updatePreview);
+        ui2.template.addEventListener('input', updateMatched);
+
+        ui.filterInput.addEventListener('input', renderTable);
+
+        // Card 2 filter list toggling
+        function bindFilterList(container, stateKey) {
+            container.addEventListener('change', (e) => {
+                if (e.target.type !== 'checkbox') return;
+                const store = state[stateKey];
+                const v = e.target.dataset.v;
+                if (e.target.checked) store.add(v);
+                else store.delete(v);
+                renderFilters();
+                updateMatched();
+            });
+        }
+        bindFilterList(ui2.schoolList, 'schoolSel');
+        bindFilterList(ui2.levelList, 'levelSel');
+
+        ui2.btnSchoolAll.onclick = () => { state.schoolSel.clear(); state.schools.forEach((v) => state.schoolSel.add(v)); renderFilters(); updateMatched(); };
+        ui2.btnSchoolNone.onclick = () => { state.schoolSel.clear(); renderFilters(); updateMatched(); };
+        ui2.btnLevelAll.onclick = () => { state.levelSel.clear(); state.levels.forEach((v) => state.levelSel.add(v)); renderFilters(); updateMatched(); };
+        ui2.btnLevelNone.onclick = () => { state.levelSel.clear(); renderFilters(); updateMatched(); };
+
+        ui.selectAll.addEventListener('change', () => {
+            const ids = Array.from(ui.tbody.querySelectorAll('tr')).map((tr) => tr.dataset.id);
+            ids.forEach((id) => {
+                if (ui.selectAll.checked) state.selected.add(id);
+                else state.selected.delete(id);
+            });
+            renderTable();
+            updatePreview();
+        });
+
+        ui.btnClearSel.addEventListener('click', () => {
+            state.selected.clear();
+            ui.filterInput.value = '';
+            renderTable();
+            updatePreview();
+        });
+
+        ui.tbody.addEventListener('change', (e) => {
+            if (e.target.type !== 'checkbox') return;
+            const id = e.target.closest('tr').dataset.id;
+            if (e.target.checked) state.selected.add(id);
+            else state.selected.delete(id);
+            syncHeaderCheckbox();
+            updateSelectedCount();
+            updatePreview();
+        });
+
+        // 8. INIT
+        document.addEventListener('DOMContentLoaded', () => {
+            loadRowCount();
+            loadStudents();
+        });
+    </script>
+</body>
+</html>
